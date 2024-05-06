@@ -80,9 +80,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests((requests) -> requests
+                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/refreshtoken").permitAll()
                 .requestMatchers("/api/restaurantes/**","/api/menus/**","/api/usuarios/**", "/api/reservas/**")
                         .hasRole("USUARIO")
-                .requestMatchers("/usuarios")
+                .requestMatchers("/usuarios/**")
                         .hasRole("ADMIN")
                 .anyRequest().authenticated()
         )
@@ -97,7 +98,7 @@ public class SecurityConfig {
         Customizer.withDefaults()
         ).logout((logout) -> logout
                 .invalidateHttpSession(true)
-                .logoutSuccessUrl("/")
+                //.logoutSuccessUrl("/")
                 // .deleteCookies("JSESSIONID") // no es necesario, JSESSIONID se hace por defecto
                 .permitAll()                                
 

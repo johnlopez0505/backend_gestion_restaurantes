@@ -30,7 +30,6 @@ import com.john.backend_gestion_restaurantes.dto.ChangePasswordRequest;
 import com.john.backend_gestion_restaurantes.dto.CreateUserRequest;
 import com.john.backend_gestion_restaurantes.dto.JwtUserResponse;
 import com.john.backend_gestion_restaurantes.dto.LoginRequest;
-import com.john.backend_gestion_restaurantes.dto.ResponseMessage;
 import com.john.backend_gestion_restaurantes.dto.UserResponse;
 import com.john.backend_gestion_restaurantes.modelos.RefreshToken;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
@@ -45,7 +44,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api")
-  
 public class UsuarioController {
 
     @Autowired
@@ -73,16 +71,16 @@ public class UsuarioController {
 
 
     @GetMapping("/usuarios")
-    public ResponseEntity<Object> obtenerTodosLosUsuarios(HttpServletRequest request) {
+    public ResponseEntity<Object> obtenerTodosLosUsuarios() {
         try {
             List<Usuario> usuarios = usuarioService.findAllUsuarios();
             Map<String, Object> response = new HashMap<>();
             if (!usuarios.isEmpty()) {
-                //response.put("result", "ok");
+                response.put("result", "ok");
                 response.put("usuarios", usuarios.stream().map(
                    usuario -> Map.of("id",usuario.getId(),
                                    "username",usuario.getUsername(),
-                                   "password",usuario.getPassword(),
+                                   "rol",usuario.getRoles(),
                                    "fullName",usuario.getFullName(),
                                    "imagen",usuario.getImagen(),
                                    "enable",usuario.isEnabled(),
@@ -90,10 +88,7 @@ public class UsuarioController {
                                    )
                                 )
                             );
-                return ResponseEntity.ok( ResponseMessage.of(
-                    HttpStatus.CREATED,
-                    response.toString(), 
-                    request.getRequestURI()));
+                return ResponseEntity.ok(response);
             } else {
                 response.put("result", "ok");
                 response.put("message", "No se encontro ningun usuario en la base de datos");
