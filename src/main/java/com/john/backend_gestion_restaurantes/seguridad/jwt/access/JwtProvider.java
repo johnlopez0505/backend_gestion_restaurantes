@@ -1,4 +1,4 @@
-package com.john.sistema_reservas_restaurantes.seguridad.jwt.access;
+package com.john.backend_gestion_restaurantes.seguridad.jwt.access;
 
 
 import io.jsonwebtoken.*;
@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import com.john.sistema_reservas_restaurantes.modelo.Usuario;
-import com.john.sistema_reservas_restaurantes.seguridad.errorhandling.JwtTokenException;
+import com.john.backend_gestion_restaurantes.modelos.Usuario;
+import com.john.backend_gestion_restaurantes.seguridad.errorhandling.JwtTokenException;
 
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;

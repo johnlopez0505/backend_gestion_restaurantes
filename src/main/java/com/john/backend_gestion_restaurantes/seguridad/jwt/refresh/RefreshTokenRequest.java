@@ -1,4 +1,4 @@
-package com.john.sistema_reservas_restaurantes.seguridad.jwt.refresh;
+package com.john.backend_gestion_restaurantes.seguridad.jwt.refresh;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

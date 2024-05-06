@@ -1,10 +1,10 @@
-package com.john.sistema_reservas_restaurantes.seguridad.jwt.refresh;
+package com.john.backend_gestion_restaurantes.seguridad.jwt.refresh;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 
-import com.john.sistema_reservas_restaurantes.modelo.RefreshToken;
-import com.john.sistema_reservas_restaurantes.modelo.Usuario;
+import com.john.backend_gestion_restaurantes.modelos.RefreshToken;
+import com.john.backend_gestion_restaurantes.modelos.Usuario;
 
 import java.util.Optional;
 

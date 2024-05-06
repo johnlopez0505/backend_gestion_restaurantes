@@ -1,11 +1,11 @@
-package com.john.sistema_reservas_restaurantes.seguridad.jwt.refresh;
+package com.john.backend_gestion_restaurantes.seguridad.jwt.refresh;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.john.sistema_reservas_restaurantes.modelo.RefreshToken;
-import com.john.sistema_reservas_restaurantes.modelo.Usuario;
+import com.john.backend_gestion_restaurantes.modelos.RefreshToken;
+import com.john.backend_gestion_restaurantes.modelos.Usuario;
 
 import jakarta.transaction.Transactional;
 

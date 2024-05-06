@@ -1,4 +1,4 @@
-package com.john.sistema_reservas_restaurantes.seguridad.jwt.access;
+package com.john.backend_gestion_restaurantes.seguridad.jwt.access;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -12,9 +12,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import com.john.sistema_reservas_restaurantes.modelo.Usuario;
-import com.john.sistema_reservas_restaurantes.seguridad.errorhandling.JwtTokenException;
-import com.john.sistema_reservas_restaurantes.servicios.ususarios.UsuarioService;
+import com.john.backend_gestion_restaurantes.modelos.Usuario;
+import com.john.backend_gestion_restaurantes.seguridad.errorhandling.JwtTokenException;
+import com.john.backend_gestion_restaurantes.servicios.ususarios.UsuarioService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
