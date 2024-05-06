@@ -80,7 +80,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/refreshtoken").permitAll()
+                .requestMatchers("/api/public/**", "/api/auth/register", "/api/auth/login", "/api/refreshtoken").permitAll()
                 .requestMatchers("/api/restaurantes/**","/api/menus/**","/api/usuarios/**", "/api/reservas/**")
                         .hasRole("USUARIO")
                 .requestMatchers("/usuarios/**")
@@ -117,7 +117,7 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web -> web.ignoring().requestMatchers( "/api/auth/register", "/api/auth/login", "/api/refreshtoken"));
+        return (web -> web.ignoring().requestMatchers( "/api/public/**", "/api/auth/register", "/api/auth/login", "/api/refreshtoken"));
     }
 
 
