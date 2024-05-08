@@ -1,4 +1,4 @@
-package com.john.backend_gestion_restaurantes.servicios.ususarios;
+package com.john.backend_gestion_restaurantes.servicios.usuarios;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UsuariosServiceImpl  implements UsuarioService{
+public class UsuarioServiceImpl  implements UsuarioService{
 
     @Autowired
     private final PasswordEncoder passwordEncoder;
@@ -70,7 +70,7 @@ public class UsuariosServiceImpl  implements UsuarioService{
     }
 
     public Usuario createUserWithAdminRole(CreateUserRequest createUserRequest) {
-        return createUser(createUserRequest, EnumSet.of(UsuarioRol.ADMINISTRADOR));
+        return createUser(createUserRequest, EnumSet.of(UsuarioRol.ADMIN));
     }
 
     public boolean passwordMatch(Usuario user, String clearPassword) {

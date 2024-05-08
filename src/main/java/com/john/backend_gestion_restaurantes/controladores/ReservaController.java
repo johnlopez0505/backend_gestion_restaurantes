@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.john.backend_gestion_restaurantes.modelos.Reserva;
 import com.john.backend_gestion_restaurantes.servicios.reserva.ReservaService;
-import com.john.backend_gestion_restaurantes.servicios.ususarios.UsuarioService;
+import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
 
 @RestController
 @RequestMapping("/api")

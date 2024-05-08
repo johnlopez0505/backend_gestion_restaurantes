@@ -1,5 +1,5 @@
 
-INSERT INTO `usuarios` (`username`, `password`, `full_name`, `imagen`, `token`, `enabled`) VALUES ('usuario1@example.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario uno', 'avatar1.jpg', '', 1);
+INSERT INTO `usuarios` (`username`, `password`, `full_name`, `imagen`, `token`, `enabled`) VALUES ('lopezcon1@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'john lopez', 'avatar1.jpg', '', 1);
 INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('usuario2@example.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario dos', 'avatar2.jpg', '', 1);
 INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('usuario3@example.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario tres', 'avatar3.jpg', '', 1);
 INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('usuario4@example.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario cuatro', 'avatar4.jpg', '', 1);
@@ -32,5 +32,7 @@ INSERT INTO `reservas` (`numero_personas`, `fechayhora`, `id_restaurante`, `id_u
 INSERT INTO `reservas` (`numero_personas`, `fechayhora`, `id_restaurante`, `id_usuario`) VALUES ('5', '2024-05-15 15:20:00', 1, 1);
 
 
-INSERT INTO `usuario_roles` (`roles`, `usuario_id`) VALUES ('1', '1');
-INSERT INTO `usuario_roles` (`roles`, `usuario_id`) VALUES ('2', '2');
+INSERT INTO `usuario_roles` (`roles`, `usuario_id`) VALUES ('0', '1');
+INSERT INTO `usuario_roles` (`roles`, `usuario_id`) VALUES ('1', '2');
+INSERT INTO `usuario_roles` (`roles`, `usuario_id`) VALUES ('1', '3');
+INSERT INTO `usuario_roles` (`roles`, `usuario_id`) VALUES ('1', '4');

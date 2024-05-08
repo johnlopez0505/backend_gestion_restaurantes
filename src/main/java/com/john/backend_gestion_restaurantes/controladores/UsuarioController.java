@@ -37,9 +37,7 @@ import com.john.backend_gestion_restaurantes.seguridad.jwt.access.JwtProvider;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenException;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenRequest;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenService;
-import com.john.backend_gestion_restaurantes.servicios.ususarios.UsuarioService;
-
-import jakarta.servlet.http.HttpServletRequest;
+import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
 
 
 @RestController
@@ -117,6 +115,7 @@ public class UsuarioController {
                 response.put("result", "ok");
                 response.put("usuarios", Map.of("id",usuario.getId(),
                                 "username",usuario.getUsername(),
+                                "rol",usuario.getRoles(),
                                 "password",usuario.getPassword(),
                                 "fullName",usuario.getFullName(),
                                 "imagen",usuario.getImagen(),
@@ -145,45 +144,43 @@ public class UsuarioController {
            }
     }
 
-    @PostMapping("/usuarios")
-    public ResponseEntity<Object> createUsuario(@RequestBody Usuario usuario) {
-        System.out.println("usuario = " + usuario);
-        try {
-            Map<String, Object> response = new HashMap<>();
-            if (!usuario.equals(null)) {
-                // Guarda el nuevo usuario en tu base de datos
-                Usuario nuevoUsuario = usuarioService.createUsuario(usuario);
-                // Devuelve una respuesta exitosa con el menú recién creado
-                response.put("result", "ok");
-                response.put("usuarios", Map.of("id",nuevoUsuario.getId(),
-                                "username",nuevoUsuario.getUsername(),
-                                "password",nuevoUsuario.getPassword(),
-                                "fullName",nuevoUsuario.getFullName(),
-                                "imagen",nuevoUsuario.getImagen(),
-                                "enable",nuevoUsuario.isEnabled(),
-                                "token", nuevoUsuario.getToken()
-                                )
-                            );
-                return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            }else{
-                // Manejo del caso en el que no se pase un usuario
-                response.put("result", "error");
-                response.put("message", "Usuario no proporcionado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-        
-        } catch (Exception e) {
-            // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al agregar el usuario: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("post", "/api/usuarios");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+    @PostMapping("/auth/register")
+    public ResponseEntity<?> createUserWithUserRole(@RequestBody CreateUserRequest createUserRequest) {
+        System.out.println("estramos al post ");
+        Usuario user = usuarioService.createUserWithUserRole(createUserRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user));
     }
 
+    @PostMapping("/auth/register/admin")
+    public ResponseEntity<UserResponse> createUserWithAdminRole(@RequestBody CreateUserRequest createUserRequest) {
+        Usuario user = usuarioService.createUserWithAdminRole(createUserRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user));
+    }
+
+    @PostMapping("/auth/login")
+    public ResponseEntity<JwtUserResponse> login(@RequestBody LoginRequest loginRequest) {
+        // Realizamos la autenticación
+        Authentication authentication =
+                authManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                loginRequest.getUsername(),
+                                loginRequest.getPassword()
+                        )
+                );
+
+        // Una vez realizada, la guardamos en el contexto de seguridad
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Devolvemos una respuesta adecuada
+        String token = jwtProvider.generateToken(authentication);
+        Usuario user = (Usuario) authentication.getPrincipal();
+        user.setToken(token);
+        // Eliminamos el token (si existe) antes de crearlo, ya que cada usuario debería tener solamente un token de refresco simultáneo
+        refreshTokenService.deleteByUser(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(JwtUserResponse.of(user, token, refreshToken.getToken()));
+
+    }
 
 
     @PutMapping("/usuarios")
@@ -330,43 +327,7 @@ public class UsuarioController {
         }
     }
 
-    @PostMapping("/auth/register")
-    public ResponseEntity<?> createUserWithUserRole(@RequestBody CreateUserRequest createUserRequest) {
-        System.out.println("estramos al post ");
-        Usuario user = usuarioService.createUserWithUserRole(createUserRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user));
-    }
-
-    @PostMapping("/auth/register/admin")
-    public ResponseEntity<UserResponse> createUserWithAdminRole(@RequestBody CreateUserRequest createUserRequest) {
-        Usuario user = usuarioService.createUserWithAdminRole(createUserRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user));
-    }
-
-    @PostMapping("/auth/login")
-    public ResponseEntity<JwtUserResponse> login(@RequestBody LoginRequest loginRequest) {
-        // Realizamos la autenticación
-        Authentication authentication =
-                authManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                loginRequest.getUsername(),
-                                loginRequest.getPassword()
-                        )
-                );
-
-        // Una vez realizada, la guardamos en el contexto de seguridad
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        // Devolvemos una respuesta adecuada
-        String token = jwtProvider.generateToken(authentication);
-        Usuario user = (Usuario) authentication.getPrincipal();
-        user.setToken(token);
-        // Eliminamos el token (si existe) antes de crearlo, ya que cada usuario debería tener solamente un token de refresco simultáneo
-        refreshTokenService.deleteByUser(user);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(JwtUserResponse.of(user, token, refreshToken.getToken()));
-
-    }
+   
 
     @PostMapping("/refreshtoken")
     public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
@@ -391,7 +352,7 @@ public class UsuarioController {
 
 
 
-    @PutMapping("/user/changePassword")
+    @PutMapping("/usuarios/changePassword")
     public ResponseEntity<UserResponse> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
                                                        @AuthenticationPrincipal Usuario loggedUser) {
 
