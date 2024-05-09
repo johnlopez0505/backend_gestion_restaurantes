@@ -174,7 +174,8 @@ public class UsuarioController {
         String token = jwtProvider.generateToken(authentication);
         Usuario user = (Usuario) authentication.getPrincipal();
         user.setToken(token);
-        // Eliminamos el token (si existe) antes de crearlo, ya que cada usuario debería tener solamente un token de refresco simultáneo
+        // Eliminamos el token (si existe) antes de crearlo, ya que cada usuario debería tener 
+        //solamente un token de refresco simultáneo
         refreshTokenService.deleteByUser(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
         return ResponseEntity.status(HttpStatus.CREATED)

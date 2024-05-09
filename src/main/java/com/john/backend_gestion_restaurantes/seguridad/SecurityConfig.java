@@ -82,10 +82,10 @@ public class SecurityConfig {
                         .requestMatchers("/webjars/**", "/img/**", "/js/**", 
                         "/api/auth/register", "/api/auth/login", "/api/refreshtoken")
                         .permitAll()
-                        .requestMatchers("/api/restaurantes/**","/api/menus/**",
-                        "/api/usuarios/**", "/api/reservas/**")
-                        .hasAnyRole("ADMIN","USUARIO")
-                        .requestMatchers("/api/auth/register/admin")
+                        .requestMatchers("/api/restaurantes/**","/api/menus/**", 
+                                "/api/reservas/**","/api/calificaciones/**")
+                        .hasAnyRole("USUARIO","ADMIN")
+                        .requestMatchers("/api/auth/register/admin", "/api/usuarios/**")
                         .hasRole("ADMIN")
                         .anyRequest().authenticated() 
                 ) 

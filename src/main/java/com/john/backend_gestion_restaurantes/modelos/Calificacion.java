@@ -16,17 +16,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "calificaciones_opiniones")
+@Table(name = "calificaciones")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class CalificacionOpinion {
+public class Calificacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @CreatedBy
     @ManyToOne
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
@@ -34,6 +33,9 @@ public class CalificacionOpinion {
     @ManyToOne
     @JoinColumn(name = "id_restaurante")
     private Restaurante restaurante;
+
+    @CreatedBy
+    private String createdBy;
 
     private int puntuacion;
     private String comentario;

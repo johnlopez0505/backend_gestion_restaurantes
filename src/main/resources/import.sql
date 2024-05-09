@@ -13,16 +13,16 @@ INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (1
 INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (1, 'Menú Infantil', 'Menú para niños con platos divertidos y nutritivos', 7.50,"");
 INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (2, 'Menú Degustación', 'Menú con una selección de platos gourmet', 25.99,"");
 
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('5', '1', '1', 'Excelente servicio, volveré pronto.');
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('4', '2', '2', 'La comida estuvo deliciosa, pero el servicio fue un poco lento.');
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('3', '1', '3', 'El ambiente era agradable, pero la comida podría mejorar.');
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('2', '3', '1', 'No quedé satisfecho con la calidad de la comida.');
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('1', '1', '2', 'Experiencia terrible, no recomendaría este restaurante a nadie.');
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('5', '2', '3', 'Increíble atención al cliente, el personal fue muy amable.');
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('4', '1', '1', 'Buen ambiente y comida deliciosa, definitivamente regresaré.');
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('3', '3', '2', 'Nada especial, esperaba más de este restaurante.');
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('2', '1', '3', 'No recomendaría este lugar, la calidad no coincide con el precio.');
-INSERT INTO `calificaciones_opiniones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('1', '3', '1', 'Desastroso, tuve una mala experiencia desde que llegué.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('5', '1', '1', 'Excelente servicio, volveré pronto.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('4', '2', '2', 'La comida estuvo deliciosa, pero el servicio fue un poco lento.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('3', '1', '3', 'El ambiente era agradable, pero la comida podría mejorar.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('2', '3', '1', 'No quedé satisfecho con la calidad de la comida.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('1', '1', '2', 'Experiencia terrible, no recomendaría este restaurante a nadie.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('5', '2', '3', 'Increíble atención al cliente, el personal fue muy amable.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('4', '1', '1', 'Buen ambiente y comida deliciosa, definitivamente regresaré.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('3', '3', '2', 'Nada especial, esperaba más de este restaurante.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('2', '1', '3', 'No recomendaría este lugar, la calidad no coincide con el precio.');
+INSERT INTO `calificaciones` (`puntuacion`, `id_restaurante`, `id_usuario`, `comentario`) VALUES ('1', '3', '1', 'Desastroso, tuve una mala experiencia desde que llegué.');
 
 
 
