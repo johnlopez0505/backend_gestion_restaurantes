@@ -42,5 +42,11 @@ public class MenuServiceImpl implements MenuService {
       this.repoMenu.deleteAll();
     }
 
+    @Override
+    public List<Menu> getMenusCreatedByUser(String username) {
+       // Consulta los menús creados por el usuario con el nombre de usuario especificado
+       return repoMenu.findByCreatedBy(username);
+    }
+
 
 }

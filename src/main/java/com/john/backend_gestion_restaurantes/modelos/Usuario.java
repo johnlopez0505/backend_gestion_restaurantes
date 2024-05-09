@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.NaturalId;
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -41,6 +42,7 @@ public class Usuario implements UserDetails{
     private Long id;
     
     private String password;
+
     @NaturalId
     @Column(unique = true, updatable = false)
     private String username;
@@ -53,6 +55,10 @@ public class Usuario implements UserDetails{
 
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<UsuarioRol> roles;
+    
+    @Transient
+    @CreatedBy
+    private String createdBy;
 
     @Transient
     @Builder.Default

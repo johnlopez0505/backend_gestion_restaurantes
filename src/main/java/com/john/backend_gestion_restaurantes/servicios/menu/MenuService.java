@@ -12,4 +12,5 @@ public interface MenuService {
     Menu save(Menu menu);
     void deleteById(Integer id);
     void deleteAll();
+    List<Menu> getMenusCreatedByUser(String username);
 }

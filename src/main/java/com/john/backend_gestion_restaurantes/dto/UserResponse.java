@@ -27,7 +27,7 @@ public class UserResponse {
                 .username(user.getUsername())
                 .avatar(user.getImagen())
                 .fullName(user.getFullName())
-                .build();
+                .build();  
     }
 
 }

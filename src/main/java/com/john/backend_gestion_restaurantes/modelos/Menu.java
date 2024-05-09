@@ -1,7 +1,11 @@
 package com.john.backend_gestion_restaurantes.modelos;
 
 
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,8 +20,10 @@ import lombok.NoArgsConstructor;
 @Table(name = "menus")
 @Data
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
 public class Menu {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,6 +31,9 @@ public class Menu {
     @ManyToOne
     @JoinColumn(name = "id_restaurante")
     private Restaurante restaurante;
+
+    @CreatedBy
+    private String createdBy;
 
     private String nombre;
     private String descripcion;

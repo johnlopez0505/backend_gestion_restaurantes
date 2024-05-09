@@ -14,7 +14,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
 import com.john.backend_gestion_restaurantes.seguridad.errorhandling.JwtTokenException;
-import com.john.backend_gestion_restaurantes.servicios.ususarios.UsuarioService;
+import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -77,7 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
 
-
+        
     }
 
     private String getJwtTokenFromRequest(HttpServletRequest request) {

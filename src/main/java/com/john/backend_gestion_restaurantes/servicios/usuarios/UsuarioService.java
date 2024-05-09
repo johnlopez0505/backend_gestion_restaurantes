@@ -1,4 +1,4 @@
-package com.john.backend_gestion_restaurantes.servicios.ususarios;
+package com.john.backend_gestion_restaurantes.servicios.usuarios;
 
 import java.util.List;
 import java.util.Optional;
