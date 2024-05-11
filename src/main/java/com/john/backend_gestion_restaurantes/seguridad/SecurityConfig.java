@@ -105,8 +105,7 @@ public class SecurityConfig {
                         .permitAll()                                
 
                 ).csrf((protection) -> protection
-                .disable())
-                .cors(Customizer.withDefaults());
+                .disable());
         
                 http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
                 http.headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin));
