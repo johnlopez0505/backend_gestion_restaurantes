@@ -121,7 +121,7 @@ public class CalificacionController {
         }
     } 
 
-    @PostMapping("/calificaciones")
+    @PostMapping("/calificaciones/add")
     public ResponseEntity<Object> createMenu(@RequestHeader Integer id,
                                              @RequestBody Calificacion calificacion) {
         try {
@@ -161,7 +161,7 @@ public class CalificacionController {
         }
     }
 
-    @PutMapping("/calificaciones/{id}")
+    @PutMapping("/calificaciones/edit/{id}")
     public ResponseEntity<Object> updateMenu(@PathVariable Integer id, @RequestBody Calificacion calificacion) {
         try {
             Optional<Calificacion> optionalCalificacOptional = calificacionService.findCalificacionById(id);
@@ -200,7 +200,7 @@ public class CalificacionController {
         }
     }
 
-    @PatchMapping("/calificaciones/{id}")
+    @PatchMapping("/calificaciones/edit/{id}")
     public ResponseEntity<Object> patchMenu(@PathVariable Integer id, @RequestBody Map<String, Object> updates) {
         try {
             Optional<Calificacion> optionalCalificaciones = calificacionService.findCalificacionById(id);
@@ -253,7 +253,7 @@ public class CalificacionController {
         }
     }
 
-    @DeleteMapping("/calificaciones/{id}")
+    @DeleteMapping("/calificaciones/delete/{id}")
     public ResponseEntity<Object> deleteMenu(@PathVariable Integer id) {
         try {
             // Buscar la calificació por su ID

@@ -110,10 +110,10 @@ public class RestauranteController {
        }
     }
 
-    @PostMapping("/restaurantes")
-    public ResponseEntity<Object> createMenu(@RequestHeader Integer usuarioId, @RequestBody Restaurante restaurante) {
+    @PostMapping("/restaurantes/add")
+    public ResponseEntity<Object> createRestaurante(@RequestHeader Integer id, @RequestBody Restaurante restaurante) {
         try {
-            Optional<Usuario> optionalUsuario = usuarioService.findUsuarioById(usuarioId);
+            Optional<Usuario> optionalUsuario = usuarioService.findUsuarioById(id);
             Map<String, Object> response = new HashMap<>();
             if (!optionalUsuario.isPresent()) {
                 // Manejo del caso en el que no se encuentre el usuario
@@ -150,8 +150,8 @@ public class RestauranteController {
     }
     
 
-    @PutMapping("/restaurantes")
-    public ResponseEntity<Object> actualizarRestaurante(@RequestHeader  Integer id, @RequestBody Restaurante restaurante){
+    @PutMapping("/restaurantes/edit/{id}")
+    public ResponseEntity<Object> actualizarRestaurante(@PathVariable  Integer id, @RequestBody Restaurante restaurante){
         try {
             Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
             Map<String,Object> response = new HashMap<>();
@@ -193,8 +193,8 @@ public class RestauranteController {
         }
     }
 
-    @PatchMapping("/restaurantes")
-    public ResponseEntity<Object> actualizarRestaurantePatch(@RequestHeader Integer id,  @RequestBody Map<String, Object> updates) {
+    @PatchMapping("/restaurantes/edit/{id}")
+    public ResponseEntity<Object> actualizarRestaurantePatch(@PathVariable Integer id,  @RequestBody Map<String, Object> updates) {
         try {
             Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
             //System.out.println("este es el menu consultado por id " + optionalMenu.get().toString());
@@ -256,7 +256,7 @@ public class RestauranteController {
         }
     }
 
-    @DeleteMapping("/restaurantes/{id}")
+    @DeleteMapping("/restaurantes/delete/{id}")
     public ResponseEntity<Object> deleteMenu(@PathVariable Integer id) {
         try {
             // Buscar el restaurante por su ID
