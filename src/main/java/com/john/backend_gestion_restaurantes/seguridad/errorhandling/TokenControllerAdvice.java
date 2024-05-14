@@ -16,7 +16,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 
@@ -68,6 +68,16 @@ public class TokenControllerAdvice  {
                 .body(ErrorMessage.of(
                         HttpStatus.CONFLICT,
                         "El correo electrónico ya está en uso",
+                        request.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> handleMaxSizeException(MaxUploadSizeExceededException exc, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorMessage.of(
+                        HttpStatus.CONFLICT,
+                        "El archivo es muy grande ",
                         request.getRequestURI()
                 ));
     }

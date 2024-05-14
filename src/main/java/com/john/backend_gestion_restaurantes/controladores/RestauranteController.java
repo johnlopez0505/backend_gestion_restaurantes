@@ -2,8 +2,11 @@ package com.john.backend_gestion_restaurantes.controladores;
 
 import com.john.backend_gestion_restaurantes.modelos.Restaurante;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
+import com.john.backend_gestion_restaurantes.servicios.calificacion.ImagenService;
 import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
 import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -36,11 +40,23 @@ public class RestauranteController {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private ImagenService imagenService;
+
+    private String baseUrl;
+
+
+
     @GetMapping("/restaurantes")
-    public ResponseEntity<Object> obtenerTodosLosRestaurantes(){
+    public ResponseEntity<Object> obtenerTodosLosRestaurantes(HttpServletRequest request){
         try {
             List<Restaurante> restaurantes = this.restauranteService.findAllRestaurantes();
             Map<String, Object> response = new HashMap<>();
+            baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
+                                .replacePath(null)
+                                .build()
+                                .toUriString()+"/imagenes/";
+           
             if (!restaurantes.isEmpty()) {
                 response.put("result", "ok");
                 response.put("restaurantes", restaurantes.stream().map(
@@ -50,7 +66,7 @@ public class RestauranteController {
                                    "ciudad",restaurante.getCiudad(),
                                    "provincia",restaurante.getProvincia(),
                                    "telefono", restaurante.getTelefono(),
-                                   "imagen",restaurante.getImagen() != null ?restaurante.getImagen() : "Sin imagen"
+                                   "imagen",restaurante.getImagen() != null ? (baseUrl + restaurante.getImagen())  : "sin imagen"
                                    )
                                 )
                             );
@@ -111,7 +127,11 @@ public class RestauranteController {
     }
 
     @PostMapping("/restaurantes/add")
-    public ResponseEntity<Object> createRestaurante(@RequestHeader Integer id, @RequestBody Restaurante restaurante) {
+    public ResponseEntity<Object> createRestaurante(@RequestHeader Integer id, 
+                                                    @RequestBody Restaurante restaurante,
+                                                    HttpServletRequest request
+                                                    ) {
+        System.out.println("REQUEST: " + request);
         try {
             Optional<Usuario> optionalUsuario = usuarioService.findUsuarioById(id);
             Map<String, Object> response = new HashMap<>();
@@ -123,6 +143,17 @@ public class RestauranteController {
             }
             Usuario usuario = optionalUsuario.get();
             restaurante.setUsuario(usuario);
+             // Guardar la nueva imagen si existe
+            if (restaurante.getImagen() != null && !restaurante.getImagen().isEmpty()) {
+                System.out.println("entramos el el if para mirar la url");
+                baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
+                                  .replacePath(null)
+                                  .build()
+                                  .toUriString()+"/imagenes/";
+                System.out.println("base url: " + baseUrl);
+                String newFileName = imagenService.saveImage(restaurante.getImagen());
+                restaurante.setImagen(newFileName);
+            }
             // Guarda el nuevo restaurante en la base de datos
             Restaurante nuevoRestaurante = restauranteService.save(restaurante);
             // Devuelve una respuesta exitosa con el restaurante recién creado
@@ -133,7 +164,7 @@ public class RestauranteController {
                                 "ciudad", nuevoRestaurante.getCiudad(),
                                 "provincia", nuevoRestaurante.getProvincia(),
                                 "telefono", nuevoRestaurante.getTelefono(),
-                                "imagenPlato", nuevoRestaurante.getImagen()
+                                "imagenPlato", nuevoRestaurante.getImagen() != null ? (baseUrl + nuevoRestaurante.getImagen())  : "sin imagen"
                                 )
                             );
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -144,7 +175,7 @@ public class RestauranteController {
             errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
             errorResponse.put("message", "Se produjo un error al agregar el restaurante: " + e.getMessage());
             errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("post", "/api/menus");
+            errorResponse.put("post", "/api/restaurantes/add");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
