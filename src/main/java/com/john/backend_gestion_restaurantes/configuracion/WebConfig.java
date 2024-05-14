@@ -3,10 +3,11 @@ package com.john.backend_gestion_restaurantes.configuracion;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig
+public class WebConfig implements WebMvcConfigurer
 {
     @Bean
     public WebMvcConfigurer corsConfigurer()
@@ -19,7 +20,14 @@ public class WebConfig
                 .allowedHeaders("*")
                 .allowedMethods("GET", "PUT", "POST", "DELETE", "PATCH");
             }
+
+            @Override
+            public void addResourceHandlers(ResourceHandlerRegistry registry) {
+                registry.addResourceHandler("/imagenes/**","/webjars/**", "/img/**", "/js/**")
+                        .addResourceLocations("classpath:/static/imagenes/");
+            }
         };
     }
+
 }
 
