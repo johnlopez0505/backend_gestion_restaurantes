@@ -79,7 +79,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/webjars/**", "/img/**", "/js/**", "/imagenes/**", 
+                        .requestMatchers("/webjars/**", "/img/**", "/js/**", "/imagenes/**","imagenes",
                                          "/api/auth/register", "/api/auth/login", "/api/refreshtoken")
                         .permitAll()
 
