@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -44,18 +45,18 @@ public class SecurityConfig {
 
 
         // Versión 1
-        /*
+        
         AuthenticationManager authenticationManager =
                 authenticationManagerBuilder
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder)
                         .and().build();
-        */
+        
 
         // Versión 2
-        AuthenticationManager authenticationManager =
-            authenticationManagerBuilder.authenticationProvider(authenticationProvider())
-                    .build();
+        // AuthenticationManager authenticationManager =
+        //     authenticationManagerBuilder.authenticationProvider(authenticationProvider())
+        //             .build();
 
         return authenticationManager;
 
@@ -78,7 +79,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.authorizeHttpRequests((requests) -> requests
+        http .csrf((protection) -> protection
+                .disable())
+                .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/webjars/**", "/img/**", "/js/**", "/imagenes/**", 
                                          "/api/auth/register", "/api/auth/login", "/api/refreshtoken")
                         .permitAll()
@@ -87,7 +90,7 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
                         .requestMatchers("/api/restaurantes/**","/api/menus/**", 
-                                "/api/reservas/**","/api/calificaciones/**")
+                                "/api/reservas/**","/api/calificaciones/**","/imagenes/**")
                         .hasAnyRole("USUARIO","ADMIN")
                         
                         .anyRequest().authenticated() 
@@ -100,13 +103,17 @@ public class SecurityConfig {
                 .rememberMe(
                 Customizer.withDefaults()
                 )
-                .csrf((protection) -> protection
-                .disable());
-        
-                http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-                http.headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin));
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin));
 
         return http.build();
     }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/imagenes/**", "/js/**", "/webjars/**",
+        "/api/auth/register", "/api/auth/login", "/api/refreshtoken", "imagenes", "/img/**");
+    }
+
 
 }
