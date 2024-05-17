@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -43,20 +42,9 @@ public class SecurityConfig {
                 http.getSharedObject(AuthenticationManagerBuilder.class);
         
 
-
-        // Versión 1
-        
         AuthenticationManager authenticationManager =
-                authenticationManagerBuilder
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder)
-                        .and().build();
-        
-
-        // Versión 2
-        // AuthenticationManager authenticationManager =
-        //     authenticationManagerBuilder.authenticationProvider(authenticationProvider())
-        //             .build();
+             authenticationManagerBuilder.authenticationProvider(authenticationProvider())
+                     .build();
 
         return authenticationManager;
 
@@ -108,12 +96,5 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/imagenes/**", "/js/**", "/webjars/**",
-        "/api/auth/register", "/api/auth/login", "/api/refreshtoken", "imagenes", "/img/**");
-    }
-
 
 }

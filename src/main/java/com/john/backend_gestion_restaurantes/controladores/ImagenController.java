@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,11 +20,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Controller
 public class ImagenController {
 
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
     @GetMapping("/imagenes/{filename}")
     public ResponseEntity<?> getImage(@PathVariable String filename) {
         try {
              // Construir la ruta completa del archivo
-            String filePath = "src/main/resources/stactic/imagenes/" + filename;
+          
+            String filePath = uploadDir + filename;
             Path path = Paths.get(filePath);
             // Verificar la existencia del archivo
             if (Files.exists(path) && !Files.isDirectory(path)) {
