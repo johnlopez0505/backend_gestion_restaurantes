@@ -78,7 +78,7 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
                         .requestMatchers("/api/restaurantes/**","/api/menus/**", 
-                                "/api/reservas/**","/api/calificaciones/**","/imagenes/**")
+                                "/api/reservas/**","/api/calificaciones/**")
                         .hasAnyRole("USUARIO","ADMIN")
                         
                         .anyRequest().authenticated() 
