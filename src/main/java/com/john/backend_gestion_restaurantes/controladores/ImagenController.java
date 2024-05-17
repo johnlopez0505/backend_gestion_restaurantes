@@ -1,5 +1,6 @@
 package com.john.backend_gestion_restaurantes.controladores;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 
 
@@ -22,6 +26,7 @@ public class ImagenController {
 
     @Value("${file.upload-dir}")
     private String uploadDir;
+    private final String storageDirectoryPath = "/app/imagenes"; // Ruta absoluta dentro del contenedor
 
     @GetMapping("/imagenes/{filename}")
     public ResponseEntity<?> getImage(@PathVariable String filename) {
@@ -45,9 +50,24 @@ public class ImagenController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @PostMapping("/imagen")
+    public ResponseEntity<String> uploadImage(@RequestParam("imagen") MultipartFile imagen) {
+        try {
+            String filePath = Paths.get(storageDirectoryPath, imagen.getOriginalFilename()).toString();
+            Files.write(Paths.get(filePath), imagen.getBytes());
+            return ResponseEntity.ok("Imagen subida exitosamente: " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir la imagen");
+        }
+    }
+
     
     
 }
+
+
 
 class MediaTypeUtils {
 
