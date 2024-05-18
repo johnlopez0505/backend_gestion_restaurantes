@@ -42,20 +42,9 @@ public class SecurityConfig {
                 http.getSharedObject(AuthenticationManagerBuilder.class);
         
 
-
-        // Versión 1
-        /*
         AuthenticationManager authenticationManager =
-                authenticationManagerBuilder
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder)
-                        .and().build();
-        */
-
-        // Versión 2
-        AuthenticationManager authenticationManager =
-            authenticationManagerBuilder.authenticationProvider(authenticationProvider())
-                    .build();
+             authenticationManagerBuilder.authenticationProvider(authenticationProvider())
+                     .build();
 
         return authenticationManager;
 
@@ -78,15 +67,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/webjars/**", "/img/**", "/js/**", 
-                        "/api/auth/register", "/api/auth/login", "/api/refreshtoken")
+        http .csrf((protection) -> protection
+                .disable())
+                .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("/webjars/**", "/img/**", "/js/**", "/imagenes/**", 
+                                         "/api/auth/register", "/api/auth/login", "/api/refreshtoken")
                         .permitAll()
+
+                        .requestMatchers("/api/auth/register/admin", "/api/usuarios/**")
+                        .hasRole("ADMIN")
+
                         .requestMatchers("/api/restaurantes/**","/api/menus/**", 
                                 "/api/reservas/**","/api/calificaciones/**")
                         .hasAnyRole("USUARIO","ADMIN")
-                        .requestMatchers("/api/auth/register/admin", "/api/usuarios/**")
-                        .hasRole("ADMIN")
+                        
                         .anyRequest().authenticated() 
                 ) 
                 .exceptionHandling(handling -> handling
@@ -94,22 +88,11 @@ public class SecurityConfig {
                         .accessDeniedHandler(jwtAccessDeniedHandler))
                         .sessionManagement(management -> management
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .formLogin((formLogin) -> formLogin
-                        .permitAll()
-                ).rememberMe(
+                .rememberMe(
                 Customizer.withDefaults()
-                ).logout((logout) -> logout
-                        .invalidateHttpSession(true)
-                        .logoutSuccessUrl("/")
-                        // .deleteCookies("JSESSIONID") // no es necesario, JSESSIONID se hace por defecto
-                        .permitAll()                                
-
-                ).csrf((protection) -> protection
-                .disable())
-                .cors(Customizer.withDefaults());
-        
-                http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-                http.headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin));
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin));
 
         return http.build();
     }

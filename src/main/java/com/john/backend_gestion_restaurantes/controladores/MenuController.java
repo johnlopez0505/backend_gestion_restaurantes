@@ -120,7 +120,7 @@ public class MenuController {
         }
     } 
 
-    @PostMapping("/menus")
+    @PostMapping("/menus/add")
     public ResponseEntity<Object> createMenu(@RequestHeader Integer id, @RequestBody Menu menu) {
         try {
             Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
@@ -159,7 +159,7 @@ public class MenuController {
         }
     }
 
-    @PutMapping("/menus")
+    @PutMapping("/menus/edit")
     public ResponseEntity<Object> updateMenu(@RequestHeader Integer menuId, @RequestBody Menu menu) {
         try {
             Optional<Menu> optionalMenu = menuService.findById(menuId);
@@ -201,7 +201,7 @@ public class MenuController {
         }
     }
 
-    @PatchMapping("/menus")
+    @PatchMapping("/menus/edit")
     public ResponseEntity<Object> patchMenu(@RequestHeader Integer id, @RequestBody Map<String, Object> updates) {
         try {
             Optional<Menu> optionalMenu = menuService.findById(id);
@@ -261,7 +261,7 @@ public class MenuController {
         }
     }
 
-    @DeleteMapping("/menus/{id}")
+    @DeleteMapping("/menus/delete/{id}")
     public ResponseEntity<Object> deleteMenu(@PathVariable Integer id) {
         try {
             // Buscar el menú por su ID
