@@ -50,17 +50,17 @@ public class ImagenController {
         }
     }
 
-    // @PostMapping("/imagen")
-    // public ResponseEntity<String> uploadImage(@RequestParam("imagen") MultipartFile imagen) {
-    //     try {
-    //         String filePath = Paths.get(storageDirectoryPath, imagen.getOriginalFilename()).toString();
-    //         Files.write(Paths.get(filePath), imagen.getBytes());
-    //         return ResponseEntity.ok("Imagen subida exitosamente: " + filePath);
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir la imagen");
-    //     }
-    // }
+    @PostMapping("/imagen")
+    public ResponseEntity<String> uploadImage(@RequestParam("imagen") MultipartFile imagen) {
+        try {
+            String filePath = Paths.get(storageDirectoryPath, imagen.getOriginalFilename()).toString();
+            Files.write(Paths.get(filePath), imagen.getBytes());
+            return ResponseEntity.ok("Imagen subida exitosamente: " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir la imagen");
+        }
+    }
 
     
     

@@ -14,9 +14,9 @@ target/test-classes
 
 ### STS ###
 .apt_generated
-.classpath
-.factorypath
-.project
+##.classpath
+##.factorypath
+##.project
 .settings
 .springBeans
 .sts4-cache
