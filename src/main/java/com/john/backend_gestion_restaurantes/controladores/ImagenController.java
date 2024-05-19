@@ -25,15 +25,14 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImagenController {
 
     @Value("${file.upload-dir}")
-    private String uploadDir;
-    private final String storageDirectoryPath = "/app/imagenes"; // Ruta absoluta dentro del contenedor
+    private String storageDirectoryPath; // Ruta absoluta dentro del contenedor
 
     @GetMapping("/imagenes/{filename}")
     public ResponseEntity<?> getImage(@PathVariable String filename) {
         try {
              // Construir la ruta completa del archivo
           
-            String filePath = uploadDir + filename;
+            String filePath = storageDirectoryPath + filename;
             Path path = Paths.get(filePath);
             // Verificar la existencia del archivo
             if (Files.exists(path) && !Files.isDirectory(path)) {
@@ -51,17 +50,17 @@ public class ImagenController {
         }
     }
 
-    @PostMapping("/imagen")
-    public ResponseEntity<String> uploadImage(@RequestParam("imagen") MultipartFile imagen) {
-        try {
-            String filePath = Paths.get(storageDirectoryPath, imagen.getOriginalFilename()).toString();
-            Files.write(Paths.get(filePath), imagen.getBytes());
-            return ResponseEntity.ok("Imagen subida exitosamente: " + filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir la imagen");
-        }
-    }
+    // @PostMapping("/imagen")
+    // public ResponseEntity<String> uploadImage(@RequestParam("imagen") MultipartFile imagen) {
+    //     try {
+    //         String filePath = Paths.get(storageDirectoryPath, imagen.getOriginalFilename()).toString();
+    //         Files.write(Paths.get(filePath), imagen.getBytes());
+    //         return ResponseEntity.ok("Imagen subida exitosamente: " + filePath);
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir la imagen");
+    //     }
+    // }
 
     
     
