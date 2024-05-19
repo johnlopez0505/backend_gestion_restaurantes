@@ -7,6 +7,7 @@
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/servicios/menu/MenuServiceImpl.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/servicios/menu/MenuService.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/dto/CreateUserRequest.java
+/home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/seguridad/exepciones/ImageSaveException.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/modelos/Usuario.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/seguridad/errorhandling/JwtAccessDeniedHandler.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/servicios/usuarios/CustomUserDetailsService.java

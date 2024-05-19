@@ -33,6 +33,7 @@ public class ImagenController {
              // Construir la ruta completa del archivo
           
             String filePath = storageDirectoryPath + filename;
+            System.out.println("filePath " + filePath);
             Path path = Paths.get(filePath);
             // Verificar la existencia del archivo
             if (Files.exists(path) && !Files.isDirectory(path)) {
@@ -49,19 +50,6 @@ public class ImagenController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-    @PostMapping("/imagen")
-    public ResponseEntity<String> uploadImage(@RequestParam("imagen") MultipartFile imagen) {
-        try {
-            String filePath = Paths.get(storageDirectoryPath, imagen.getOriginalFilename()).toString();
-            Files.write(Paths.get(filePath), imagen.getBytes());
-            return ResponseEntity.ok("Imagen subida exitosamente: " + filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir la imagen");
-        }
-    }
-
     
     
 }

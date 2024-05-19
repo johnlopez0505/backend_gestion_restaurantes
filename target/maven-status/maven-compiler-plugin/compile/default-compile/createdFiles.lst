@@ -46,6 +46,7 @@ com/john/backend_gestion_restaurantes/servicios/usuarios/UsuarioService.class
 com/john/backend_gestion_restaurantes/dto/ResponseMessage.class
 com/john/backend_gestion_restaurantes/dto/CreateUserRequest.class
 com/john/backend_gestion_restaurantes/configuracion/WebConfig$1.class
+com/john/backend_gestion_restaurantes/seguridad/exepciones/ImageSaveException.class
 com/john/backend_gestion_restaurantes/servicios/usuarios/AuthService.class
 com/john/backend_gestion_restaurantes/servicios/restaurante/RestauranteService.class
 com/john/backend_gestion_restaurantes/dto/ResponseMessage$ResponseMessageBuilder.class

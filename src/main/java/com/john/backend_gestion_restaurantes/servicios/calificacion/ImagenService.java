@@ -6,15 +6,21 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.john.backend_gestion_restaurantes.seguridad.exepciones.ImageSaveException;
 
 @Service
 public class ImagenService {
+
+    @Value("${file.upload-dir}")
+    private String imagenesDirectorio;
+
  
     public  String saveImage(String base64Image) throws IOException {
 
-        final String IMAGENES_DIRECTORY = "src/main/resources/stactic/imagenes/";
-
+    
         byte[] imageBytes = Base64.getDecoder().decode(base64Image.split(",")[1]);
          // Verificar la extensión de la imagen
          String[] parts = base64Image.split(";");
@@ -24,10 +30,16 @@ public class ImagenService {
          }
         String fileName = UUID.randomUUID().toString() + "." + extension.toLowerCase();
         System.out.println("filename image: " + fileName);
-        File file = new File(IMAGENES_DIRECTORY + fileName);
-        FileOutputStream outputStream = new FileOutputStream(file);
-        outputStream.write(imageBytes);
-        outputStream.close();
+        File directory = new File(imagenesDirectorio);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        File file = new File(directory, fileName);
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
+            outputStream.write(imageBytes);
+        }catch (IOException e) {
+            throw new ImageSaveException("Error al guardar la imagen", e);
+        }
         return fileName;
     }
 }
