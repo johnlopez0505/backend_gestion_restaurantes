@@ -1,8 +1,8 @@
 
 INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon1@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'john lopez', 'avatar1.jpg', null, true);
-INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon2@hotmail.com', '{bcrypt}$2a$true0$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario dos', 'avatar2.jpg', null, true);
-INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon3@hotmail.com', '{bcrypt}$2a$true0$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario tres', 'avatar3.jpg', null, true);
-INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon4@hotmail.com', '{bcrypt}$2a$true0$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario cuatro', 'avatar4.jpg', null, true);
+INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon2@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario dos', 'avatar2.jpg', null, true);
+INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon3@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario tres', 'avatar3.jpg', null, true);
+INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon4@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario cuatro', 'avatar4.jpg', null, true);
 
 INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (1, 'La Parrilla de Juan', 'Madrid', 'Madrid', '123456789', 'restaurante1.jpg');
 INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (1, 'Sabores de María', 'Barcelona', 'Barcelona', '987654321', 'restaurante2.jpg');
