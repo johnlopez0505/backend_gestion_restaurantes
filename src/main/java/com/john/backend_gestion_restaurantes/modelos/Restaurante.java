@@ -40,8 +40,9 @@ public class Restaurante {
     private String ciudad;
     private String provincia;
     private String telefono;
+    
     @Lob
-    @Column(name = "imagen", columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String imagen;
 
     @Transient
