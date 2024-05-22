@@ -10,4 +10,5 @@ public interface RestauranteService {
     Restaurante save(Restaurante restaurante);
     Optional<Restaurante> findById(Integer id);
     void deleteById(Integer id);
+     List<Restaurante> getRestaurantesCreatedByUser(String username);
 }

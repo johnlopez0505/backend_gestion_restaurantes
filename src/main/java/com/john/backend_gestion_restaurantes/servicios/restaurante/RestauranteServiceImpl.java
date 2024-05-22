@@ -35,4 +35,10 @@ public class RestauranteServiceImpl implements RestauranteService{
         repoRestaurante.deleteById(id);
     }
 
+    @Override
+    public List<Restaurante> getRestaurantesCreatedByUser(String username) {
+        // Consulta los restaurantes creados por el usuario con el nombre de usuario especificado
+        return repoRestaurante.findByCreatedBy(username);
+    }
+
 }

@@ -1,12 +1,8 @@
 package com.john.backend_gestion_restaurantes.seguridad.errorhandling;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.john.backend_gestion_restaurantes.dto.ErrorDetails;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -18,7 +14,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class TokenControllerAdvice  {
@@ -27,7 +22,7 @@ public class TokenControllerAdvice  {
     public ResponseEntity<?> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .header("WWW-Authenticate", "Bearer")
-                .body(ErrorMessage.of(
+                .body(ErrorDetails.of(
                     HttpStatus.UNAUTHORIZED, 
                     "Error de autenticación: " + ex.getMessage(), 
                     request.getRequestURI()));
@@ -37,7 +32,7 @@ public class TokenControllerAdvice  {
     @ExceptionHandler({ AccessDeniedException.class })
     public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ErrorMessage.of(HttpStatus.FORBIDDEN, 
+                .body(ErrorDetails.of(HttpStatus.FORBIDDEN, 
                     "Acceso denegado: " + ex.getMessage(), 
                     request.getRequestURI()));
 
@@ -47,7 +42,7 @@ public class TokenControllerAdvice  {
     @ExceptionHandler({JwtTokenException.class})
     public ResponseEntity<?> handleTokenException(JwtTokenException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ErrorMessage.of(HttpStatus.FORBIDDEN, 
+                .body(ErrorDetails.of(HttpStatus.FORBIDDEN, 
                     "Error al procesar el token JWT: " + ex.getMessage(), 
                     request.getRequestURI()));
     }
@@ -55,7 +50,7 @@ public class TokenControllerAdvice  {
     @ExceptionHandler({UsernameNotFoundException.class})
     public ResponseEntity<?> handleUserNotExistsException(UsernameNotFoundException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorMessage.of(
+                .body(ErrorDetails.of(
                         HttpStatus.UNAUTHORIZED,
                         "El usuario no fue encontrado en el sistema.",
                         request.getRequestURI()
@@ -65,7 +60,7 @@ public class TokenControllerAdvice  {
     @ExceptionHandler({DataIntegrityViolationException.class})
     public ResponseEntity<?> dataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ErrorMessage.of(
+                .body(ErrorDetails.of(
                         HttpStatus.CONFLICT,
                         "El correo electrónico ya está en uso",
                         request.getRequestURI()
@@ -75,35 +70,8 @@ public class TokenControllerAdvice  {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<?> handleMaxSizeException(MaxUploadSizeExceededException exc, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ErrorMessage.of(
-                        HttpStatus.CONFLICT,
-                        "El archivo es muy grande ",
-                        request.getRequestURI()
-                ));
+                .body( ErrorDetails.of(HttpStatus.CONFLICT,
+                "El archivo es muy grande ",
+                request.getRequestURI()));
     }
-
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @Builder
-    public static class ErrorMessage {
-
-        private HttpStatus status;
-        private String message, path;
-
-        @Builder.Default
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy hh:mm:ss")
-        private LocalDateTime dateTime = LocalDateTime.now();
-
-        public static ErrorMessage of (HttpStatus status, String message, String path) {
-            return ErrorMessage.builder()
-                    .status(status)
-                    .message(message)
-                    .path(path)
-                    .build();
-        }
-
-    }
-
-
 }

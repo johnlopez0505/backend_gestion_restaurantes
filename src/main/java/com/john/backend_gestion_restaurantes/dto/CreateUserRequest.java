@@ -14,7 +14,7 @@ public class CreateUserRequest {
     private String username;
     private String password;
     private String verifyPassword;
-    private String avatar;
+    private String imagen;
     private String fullName;
 
 }

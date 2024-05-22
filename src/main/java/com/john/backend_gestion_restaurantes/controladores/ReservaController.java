@@ -9,14 +9,21 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.john.backend_gestion_restaurantes.modelos.Reserva;
+import com.john.backend_gestion_restaurantes.modelos.Restaurante;
 import com.john.backend_gestion_restaurantes.servicios.reserva.ReservaService;
-import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
+import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+
 
 @RestController
 @RequestMapping("/api")
@@ -26,7 +33,7 @@ public class ReservaController {
     private ReservaService reservaService;
     
     @Autowired
-    private UsuarioService usuarioService;
+    private RestauranteService restauranteService;
 
     @GetMapping("/reservas")
     public ResponseEntity<Object> findAllReservas() {
@@ -63,7 +70,7 @@ public class ReservaController {
         }
     }
 
-     @GetMapping("/reservas/{id}")
+    @GetMapping("/reservas/{id}")
     public ResponseEntity<Object> findAllReservas(@PathVariable Integer id) {
        try {
             Optional<Reserva> optionalReserva = reservaService.findReservaById(id);
@@ -96,5 +103,54 @@ public class ReservaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+
+    @PostMapping("path")
+     public ResponseEntity<Object> createReserva(@RequestHeader Integer id, @RequestBody Reserva reserva) {
+        try {
+            Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
+            Map<String, Object> response = new HashMap<>();
+            if (!optionalRestaurante.isPresent()) {
+                // Manejo del caso en el que no se encuentra el restaurante
+                response.put("result", "error");
+                response.put("message", "No se encontró un restaurante con el ID proporcionado");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            Restaurante restaurante = optionalRestaurante.get();
+            reserva.setRestaurante(restaurante);
+            reserva.setUsuario(restaurante.getUsuario());
+            // Guarda el nuevo menú en tu base de datos
+            Reserva nuevaReserva = reservaService.saveReserva(reserva);
+            // Devuelve una respuesta exitosa con el menú recién creado
+            response.put("result", "ok");
+            response.put("menus", Map.of("id", nuevaReserva.getId(),
+                                "restauranteId", nuevaReserva.getRestaurante().getId(),
+                                "usuarioId", nuevaReserva.getRestaurante().getUsuario().getId(),
+                                "numero_personas", nuevaReserva.getNumeroPersonas(),
+                                "fecha", nuevaReserva.getFechaYHora()
+                                )
+                            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            // Manejo de la excepción
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+            errorResponse.put("message", "Se produjo un error al crear la reserva: " + e.getMessage());
+            errorResponse.put("timestamp", LocalDateTime.now());
+            errorResponse.put("post", "/api/resrvas{id}");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/reservas/usuario")
+    public ResponseEntity<List<Reserva>> getAllReservasCreatedByCurrentUser() {
+        // Obtener el usuario autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+        // Obtener los menús creados por el usuario actual
+        List<Reserva> reservasCreatedByCurrentUser = reservaService.getReservasCreatedByUser(currentUsername);
+        return ResponseEntity.ok(reservasCreatedByCurrentUser);
+    }
+    
     
 }

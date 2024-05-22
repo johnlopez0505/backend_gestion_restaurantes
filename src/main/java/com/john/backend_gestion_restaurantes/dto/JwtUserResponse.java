@@ -26,11 +26,12 @@ public class JwtUserResponse extends UserResponse {
         id = userResponse.getId();
         username = userResponse.getUsername();
         fullName = userResponse.getFullName();
-        avatar = userResponse.getAvatar();
+        imagen = userResponse.getImagen();
+        rol = userResponse.getRol();
     }
 
     public static JwtUserResponse of (Usuario user, String token, String refreshToken) {
-        JwtUserResponse result = new JwtUserResponse(UserResponse.fromUser(user));
+        JwtUserResponse result = new JwtUserResponse(UserResponse.fromUser(user, ""));
         result.setToken(token);
         result.setRefreshToken(refreshToken);
         return result;

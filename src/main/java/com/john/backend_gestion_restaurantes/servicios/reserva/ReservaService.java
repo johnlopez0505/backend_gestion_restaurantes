@@ -11,4 +11,5 @@ public interface ReservaService {
     Optional<Reserva> findReservaById(Integer id);
     Reserva saveReserva(Reserva reserva);
     void deleteReservaById(Integer id);
+    List<Reserva> getReservasCreatedByUser(String username);
 }

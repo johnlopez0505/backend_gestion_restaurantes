@@ -128,7 +128,7 @@ public class MenuController {
             if (!optionalRestaurante.isPresent()) {
                 // Manejo del caso en el que no se encuentra el restaurante
                 response.put("result", "error");
-                response.put("message", "No se encontró un menú con el ID proporcionado");
+                response.put("message", "No se encontró un restaurante con el ID proporcionado");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
             Restaurante restaurante = optionalRestaurante.get();
@@ -152,7 +152,7 @@ public class MenuController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
             errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al agregar el menú: " + e.getMessage());
+            errorResponse.put("message", "Se produjo un error al crear el menú: " + e.getMessage());
             errorResponse.put("timestamp", LocalDateTime.now());
             errorResponse.put("post", "/api/menus");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

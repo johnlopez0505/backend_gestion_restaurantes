@@ -36,4 +36,10 @@ public class ReservaServiceImpl implements ReservaService{
     public void deleteReservaById(Integer id) {
        repoReservas.deleteById(id);
     }
+
+   @Override
+   public List<Reserva> getReservasCreatedByUser(String username) {
+      // Consulta las reservas creadas por el usuario con el nombre de usuario especificado
+      return repoReservas.findByCreatedBy(username);
+   }
 }

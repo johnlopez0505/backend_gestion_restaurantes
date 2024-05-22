@@ -2,7 +2,7 @@ package com.john.backend_gestion_restaurantes.controladores;
 
 import com.john.backend_gestion_restaurantes.modelos.Restaurante;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
-import com.john.backend_gestion_restaurantes.servicios.calificacion.ImagenService;
+import com.john.backend_gestion_restaurantes.servicios.imagenes.ImagenService;
 import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
 import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
 
@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -90,10 +92,14 @@ public class RestauranteController {
     }
 
     @GetMapping("/restaurantes/{id}")
-    public ResponseEntity<Object> obtenerRestaurantePorId(@PathVariable Integer id) {
+    public ResponseEntity<Object> obtenerRestaurantePorId(@PathVariable Integer id, HttpServletRequest request) {
        try {
         Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
         Map<String, Object> response = new HashMap<>();
+        baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
+                                    .replacePath(null)
+                                    .build()
+                                    .toUriString()+"/imagenes/";
         if(optionalRestaurante.isPresent()) {
             Restaurante restaurante = optionalRestaurante.get();
             response.put("result", "ok");
@@ -318,5 +324,15 @@ public class RestauranteController {
              errorResponse.put("delete", "/api/menus/{id}");
              return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+
+    @GetMapping("/restaurantes/usuario")
+    public ResponseEntity<List<Restaurante>> getAllRestaurantesCreatedByCurrentUser() {
+        // Obtener el usuario autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+        // Obtener los menús creados por el usuario actual
+        List<Restaurante> reservasCreatedByCurrentUser = restauranteService.getRestaurantesCreatedByUser(currentUsername);
+        return ResponseEntity.ok(reservasCreatedByCurrentUser);
     }
 }

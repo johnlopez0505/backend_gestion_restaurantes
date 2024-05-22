@@ -1,17 +1,21 @@
 package com.john.backend_gestion_restaurantes.servicios.usuarios;
 
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.john.backend_gestion_restaurantes.dto.CreateUserRequest;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
 import com.john.backend_gestion_restaurantes.modelos.UsuarioRol;
 import com.john.backend_gestion_restaurantes.repositorios.RepoUsuarios;
+import com.john.backend_gestion_restaurantes.servicios.imagenes.ImagenService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +28,11 @@ public class UsuarioServiceImpl  implements UsuarioService{
 
     @Autowired
     private RepoUsuarios repoUsuarios;
+
+     @Autowired
+    private ImagenService imagenService;
+
+    private  String newFileName;
 
 
     @Override
@@ -54,10 +63,15 @@ public class UsuarioServiceImpl  implements UsuarioService{
 
 
     public Usuario createUser(CreateUserRequest createUserRequest, EnumSet<UsuarioRol> roles) {
+        try {
+            newFileName = imagenService.saveImage(createUserRequest.getImagen());
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error al guardar la imagen");
+        }
         Usuario user =  Usuario.builder()
                 .username(createUserRequest.getUsername())
                 .password(passwordEncoder.encode(createUserRequest.getPassword()))
-                .imagen(createUserRequest.getAvatar())
+                .imagen(newFileName)
                 .fullName(createUserRequest.getFullName())
                 .roles(roles)
                 .build();
