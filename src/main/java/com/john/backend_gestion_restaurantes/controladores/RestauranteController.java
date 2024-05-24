@@ -2,6 +2,7 @@ package com.john.backend_gestion_restaurantes.controladores;
 
 import com.john.backend_gestion_restaurantes.modelos.Restaurante;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
+import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
 import com.john.backend_gestion_restaurantes.servicios.imagenes.ImagenService;
 import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
 import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
@@ -45,6 +46,9 @@ public class RestauranteController {
     @Autowired
     private ImagenService imagenService;
 
+    @Autowired
+    private FirebaseStorageService firebaseStorageService;
+
     private String baseUrl;
 
 
@@ -68,7 +72,7 @@ public class RestauranteController {
                                    "ciudad",restaurante.getCiudad(),
                                    "provincia",restaurante.getProvincia(),
                                    "telefono", restaurante.getTelefono(),
-                                   "imagen",restaurante.getImagen() != null ? (baseUrl + restaurante.getImagen())  : "sin imagen"
+                                   "imagen",firebaseStorageService.getFileUrl(restaurante.getImagen())
                                    )
                                 )
                             );
@@ -157,7 +161,7 @@ public class RestauranteController {
                                   .build()
                                   .toUriString()+"/imagenes/";
                 System.out.println("base url: " + baseUrl);
-                String newFileName = imagenService.saveImage(restaurante.getImagen());
+                String newFileName = firebaseStorageService.uploadBase64Image(restaurante.getImagen());
                 restaurante.setImagen(newFileName);
             }
             // Guarda el nuevo restaurante en la base de datos
@@ -170,7 +174,7 @@ public class RestauranteController {
                                 "ciudad", nuevoRestaurante.getCiudad(),
                                 "provincia", nuevoRestaurante.getProvincia(),
                                 "telefono", nuevoRestaurante.getTelefono(),
-                                "imagenPlato", nuevoRestaurante.getImagen() != null ? (baseUrl + nuevoRestaurante.getImagen())  : "sin imagen"
+                                "imagenPlato", firebaseStorageService.getFileUrl(nuevoRestaurante.getImagen())
                                 )
                             );
             return ResponseEntity.status(HttpStatus.CREATED).body(response);

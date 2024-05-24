@@ -67,7 +67,7 @@ public class SecurityConfig {
                 .disable())
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/webjars/**", "/img/**", "/js/**", "/imagenes/**", 
-                                         "/api/auth/register", "/api/auth/login", "/api/refreshtoken")
+                                         "/api/auth/register", "/api/auth/login", "/firebase/upload", "/api/refreshtoken","/firebase/**")
                         .permitAll()
 
                         .requestMatchers("/api/auth/register/admin", "/api/usuarios/**")

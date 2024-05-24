@@ -23,7 +23,7 @@ public class WebConfig implements WebMvcConfigurer
 
             @Override
             public void addResourceHandlers(ResourceHandlerRegistry registry) {
-                registry.addResourceHandler("/imagenes/**","/webjars/**", "/img/**", "/js/**")
+                registry.addResourceHandler("/imagenes/**","/webjars/**", "/img/**", "/js/**","/firebase/**")
                         .addResourceLocations("classpath:src/main/resource/static/imagenes");
             }
         };

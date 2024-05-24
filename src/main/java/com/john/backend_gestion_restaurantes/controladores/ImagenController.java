@@ -33,7 +33,7 @@ public class ImagenController {
             Path path = Paths.get(filePath);
             // Verificar la existencia del archivo
             if (Files.exists(path) && !Files.isDirectory(path)) {
-                MediaType mediaType = MediaTypeUtils.getMediaTypeForFileName(filename);
+                MediaType mediaType = getMediaTypeForFileName(filename);
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(mediaType);
                 // Construir y devolver la respuesta con el archivo
@@ -46,27 +46,39 @@ public class ImagenController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
-    
-}
 
-
-
-class MediaTypeUtils {
-
-    private static final Map<String, MediaType> mediaTypeMap;
-
-    static {
-        mediaTypeMap = new HashMap<>();
+    public static MediaType getMediaTypeForFileName(String fileName) {
+        Map<String, MediaType> mediaTypeMap = new HashMap<>();
         mediaTypeMap.put("png", MediaType.IMAGE_PNG);
         mediaTypeMap.put("jpg", MediaType.IMAGE_JPEG);
         mediaTypeMap.put("jpeg", MediaType.IMAGE_JPEG);
         mediaTypeMap.put("gif", MediaType.IMAGE_GIF);
-    }
 
-    public static MediaType getMediaTypeForFileName(String fileName) {
         String[] parts = fileName.split("\\.");
         String extension = parts.length > 1 ? parts[parts.length - 1] : "";
         return mediaTypeMap.getOrDefault(extension.toLowerCase(), MediaType.APPLICATION_OCTET_STREAM);
     }
+    
+    
 }
+
+
+
+// class MediaTypeUtils {
+
+//     private static final Map<String, MediaType> mediaTypeMap;
+
+//     static {
+//         mediaTypeMap = new HashMap<>();
+//         mediaTypeMap.put("png", MediaType.IMAGE_PNG);
+//         mediaTypeMap.put("jpg", MediaType.IMAGE_JPEG);
+//         mediaTypeMap.put("jpeg", MediaType.IMAGE_JPEG);
+//         mediaTypeMap.put("gif", MediaType.IMAGE_GIF);
+//     }
+
+//     public static MediaType getMediaTypeForFileName(String fileName) {
+//         String[] parts = fileName.split("\\.");
+//         String extension = parts.length > 1 ? parts[parts.length - 1] : "";
+//         return mediaTypeMap.getOrDefault(extension.toLowerCase(), MediaType.APPLICATION_OCTET_STREAM);
+//     }
+// }

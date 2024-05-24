@@ -6,17 +6,16 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 
 import com.john.backend_gestion_restaurantes.seguridad.exepciones.ImageSaveException;
 
-import jakarta.annotation.PostConstruct;
 
 @Service
 public class ImagenService {
@@ -27,18 +26,9 @@ public class ImagenService {
     @Value("${file.upload-dir}")
     private String imagenesDirectorio;
 
-    private final Storage storage;
-    private Bucket bucket;
-
-    // Inyección de dependencias mediante constructor
-    public ImagenService(Storage storage) {
-        this.storage = storage;
-    }
-
-    @PostConstruct
-    public void init() {
-        this.bucket = storage.get(bucketName);
-    }
+    @Autowired
+    private Storage storage;
+   
 
     public String saveImage(String base64Image) throws IOException {
         if (base64Image == null) {
