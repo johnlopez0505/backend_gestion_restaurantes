@@ -3,6 +3,7 @@ package com.john.backend_gestion_restaurantes.configuracion;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,10 +18,13 @@ import com.google.firebase.cloud.StorageClient;
 @Configuration
 public class FirebaseConfig {
 
+    @Value("${firebase.config.path}")
+    private String firebaseConfigPath;
+
     @Bean
     public FirebaseApp initializeFirebaseApp() throws IOException  {
         FileInputStream serviceAccount = new FileInputStream(
-            "./images-firebase.json");
+            firebaseConfigPath);
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
