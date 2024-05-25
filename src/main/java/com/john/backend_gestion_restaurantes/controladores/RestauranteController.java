@@ -3,7 +3,6 @@ package com.john.backend_gestion_restaurantes.controladores;
 import com.john.backend_gestion_restaurantes.modelos.Restaurante;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
 import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
-import com.john.backend_gestion_restaurantes.servicios.imagenes.ImagenService;
 import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
 import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
 
@@ -43,8 +42,6 @@ public class RestauranteController {
     @Autowired
     private UsuarioService usuarioService;
 
-    @Autowired
-    private ImagenService imagenService;
 
     @Autowired
     private FirebaseStorageService firebaseStorageService;
