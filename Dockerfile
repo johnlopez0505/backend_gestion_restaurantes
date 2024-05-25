@@ -37,7 +37,14 @@ COPY --from=build /app/target/backend_gestion_restaurantes-0.0.1-SNAPSHOT.jar /a
 
 
 # Copiar los resources si ya existen en el tiempo de construcción (opcional)
-COPY src/main/resources/ /app/src/main/resources/
+COPY src/main/resources/images-firebase.json /app/src/main/resources/
+
+# Set the default profile to 'prod'
+ARG PROFILE=dev
+ENV SPRING_PROFILES_ACTIVE=${PROFILE}
+
+# For development environment
+RUN -e SPRING_PROFILES_ACTIVE=dev /app/app.jar:dev
 
 
 # Establecer el punto de entrada
