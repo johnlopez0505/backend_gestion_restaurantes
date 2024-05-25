@@ -37,7 +37,7 @@ COPY --from=build /app/target/backend_gestion_restaurantes-0.0.1-SNAPSHOT.jar /a
 
 
 # Copiar los resources si ya existen en el tiempo de construcción (opcional)
-COPY src/main/resources/images-firebase.json /app/src/main/resources/
+COPY src/main/resources/ /app/src/main/resources/
 
 
 # Establecer el punto de entrada
