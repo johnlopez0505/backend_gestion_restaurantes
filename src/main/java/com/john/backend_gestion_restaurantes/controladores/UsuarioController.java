@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.john.backend_gestion_restaurantes.dto.ChangePasswordRequest;
 import com.john.backend_gestion_restaurantes.dto.CreateUserRequest;
@@ -37,6 +36,7 @@ import com.john.backend_gestion_restaurantes.seguridad.jwt.access.JwtProvider;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenException;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenRequest;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenService;
+import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
 import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,7 +58,9 @@ public class UsuarioController {
     @Autowired
     private final RefreshTokenService refreshTokenService;
 
-    private String baseUrl;
+     @Autowired
+    private FirebaseStorageService firebaseStorageService;
+
 
     public UsuarioController(UsuarioService usuarioService, 
                                 AuthenticationManager authManager, 
@@ -73,14 +75,10 @@ public class UsuarioController {
 
 
     @GetMapping("/usuarios")
-    public ResponseEntity<Object> obtenerTodosLosUsuarios(HttpServletRequest request) {
+    public ResponseEntity<Object> obtenerTodosLosUsuarios() {
         try {
             List<Usuario> usuarios = usuarioService.findAllUsuarios();
             Map<String, Object> response = new HashMap<>();
-            baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                            .replacePath(null)
-                            .build()
-                            .toUriString()+"/imagenes/";
             if (!usuarios.isEmpty()) {
                 response.put("result", "ok");
                 response.put("usuarios", usuarios.stream().map(
@@ -88,7 +86,7 @@ public class UsuarioController {
                                    "username",usuario.getUsername(),
                                    "rol",usuario.getRoles(),
                                    "fullName",usuario.getFullName(),
-                                   "imagen",usuario.getImagen()  != null ? (baseUrl + usuario.getImagen()) : "sin imagen",
+                                   "imagen",firebaseStorageService.getFileUrl(usuario.getImagen()),
                                    "enable",usuario.isEnabled(),
                                    "token", usuario.getToken()
                                    )
@@ -114,14 +112,10 @@ public class UsuarioController {
     }
 
     @GetMapping("/usuarios/{id}")
-    public ResponseEntity<Object> obtenerUsuarioPorId(@PathVariable Integer id, HttpServletRequest request) {
+    public ResponseEntity<Object> obtenerUsuarioPorId(@PathVariable Integer id) {
         try {
             Optional<Usuario> optionalUsuario = usuarioService.findUsuarioById(id);
             Map<String, Object> response = new HashMap<>();
-            baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                                .replacePath(null)
-                                .build()
-                                .toUriString()+"/imagenes/";
             if (optionalUsuario.isPresent()) {
                 Usuario usuario = optionalUsuario.get();
                 response.put("result", "ok");
@@ -130,7 +124,7 @@ public class UsuarioController {
                                 "rol",usuario.getRoles(),
                                 "password",usuario.getPassword(),
                                 "fullName",usuario.getFullName(),
-                                "imagen",usuario.getImagen()  != null ? (baseUrl + usuario.getImagen()) : "sin imagen",
+                                "imagen",firebaseStorageService.getFileUrl(usuario.getImagen()),
                                 "enable",usuario.isEnabled(),
                                 "token", usuario.getToken()
                                 )
@@ -157,27 +151,15 @@ public class UsuarioController {
     }
 
     @PostMapping("/auth/register")
-    public ResponseEntity<?> createUserWithUserRole(@RequestBody CreateUserRequest createUserRequest,  HttpServletRequest request) {
-        System.out.println(createUserRequest);
-        System.out.println("estramos al post ");
-        baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                                    .replacePath(null)
-                                    .build()
-                                    .toUriString()+"/imagenes/";
-        System.out.println("base url: " + baseUrl);
+    public ResponseEntity<?> createUserWithUserRole(@RequestBody CreateUserRequest createUserRequest) {
         Usuario user = usuarioService.createUserWithUserRole(createUserRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user, baseUrl));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user, firebaseStorageService));
     }
 
     @PostMapping("/auth/register/admin")
-    public ResponseEntity<UserResponse> createUserWithAdminRole(@RequestBody CreateUserRequest createUserRequest, HttpServletRequest request) {
-        baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                                    .replacePath(null)
-                                    .build()
-                                    .toUriString()+"/imagenes/";
-        System.out.println("base url: " + baseUrl);
+    public ResponseEntity<UserResponse> createUserWithAdminRole(@RequestBody CreateUserRequest createUserRequest) {
         Usuario user = usuarioService.createUserWithAdminRole(createUserRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user, baseUrl));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user, firebaseStorageService));
     }
 
     @PostMapping("/auth/login")
@@ -202,7 +184,7 @@ public class UsuarioController {
         refreshTokenService.deleteByUser(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(JwtUserResponse.of(user, token, refreshToken.getToken()));
+                .body(JwtUserResponse.of(user, token, refreshToken.getToken(), firebaseStorageService));
 
     }
 
@@ -386,14 +368,11 @@ public class UsuarioController {
         // La gestión de errores se puede hacer con excepciones propias
         try {
             if (usuarioService.passwordMatch(loggedUser, changePasswordRequest.getOldPassword())) {
-                Optional<Usuario> modified = usuarioService.editPassword(loggedUser.getId().intValue(), changePasswordRequest.getNewPassword());
-                baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                                .replacePath(null)
-                                .build()
-                                .toUriString()+"/imagenes/";
-                System.out.println("base url: " + baseUrl);
+                Optional<Usuario> modified = usuarioService.editPassword(
+                    loggedUser.getId().intValue(), 
+                    changePasswordRequest.getNewPassword());
                 if (modified.isPresent())
-                    return ResponseEntity.ok(UserResponse.fromUser(modified.get(), baseUrl));
+                    return ResponseEntity.ok(UserResponse.fromUser(modified.get(), firebaseStorageService));
             } else {
                 // Lo ideal es que esto se gestionara de forma centralizada
                 // Se puede ver cómo hacerlo en la formación sobre Validación con Spring Boot

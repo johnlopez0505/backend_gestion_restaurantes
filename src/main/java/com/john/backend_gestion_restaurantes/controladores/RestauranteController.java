@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -46,8 +45,6 @@ public class RestauranteController {
     @Autowired
     private FirebaseStorageService firebaseStorageService;
 
-    private String baseUrl;
-
 
 
     @GetMapping("/restaurantes")
@@ -55,11 +52,6 @@ public class RestauranteController {
         try {
             List<Restaurante> restaurantes = this.restauranteService.findAllRestaurantes();
             Map<String, Object> response = new HashMap<>();
-            baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                                .replacePath(null)
-                                .build()
-                                .toUriString()+"/imagenes/";
-           
             if (!restaurantes.isEmpty()) {
                 response.put("result", "ok");
                 response.put("restaurantes", restaurantes.stream().map(
@@ -97,10 +89,6 @@ public class RestauranteController {
        try {
         Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
         Map<String, Object> response = new HashMap<>();
-        baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                                    .replacePath(null)
-                                    .build()
-                                    .toUriString()+"/imagenes/";
         if(optionalRestaurante.isPresent()) {
             Restaurante restaurante = optionalRestaurante.get();
             response.put("result", "ok");
@@ -110,7 +98,7 @@ public class RestauranteController {
                                "ciudad",restaurante.getCiudad(),
                                "provincia",restaurante.getProvincia(),
                                "telefono", restaurante.getTelefono(),
-                               "imagen",restaurante.getImagen() != null ?restaurante.getImagen() : "Sin imagen"
+                               "imagen",firebaseStorageService.getFileUrl(restaurante.getImagen())
                             )
                         );
             return ResponseEntity.ok(response);
@@ -152,14 +140,10 @@ public class RestauranteController {
             restaurante.setUsuario(usuario);
              // Guardar la nueva imagen si existe
             if (restaurante.getImagen() != null && !restaurante.getImagen().isEmpty()) {
-                System.out.println("entramos el el if para mirar la url");
-                baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                                  .replacePath(null)
-                                  .build()
-                                  .toUriString()+"/imagenes/";
-                System.out.println("base url: " + baseUrl);
                 String newFileName = firebaseStorageService.uploadBase64Image(restaurante.getImagen());
                 restaurante.setImagen(newFileName);
+            }else{
+                restaurante.setImagen("ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg");
             }
             // Guarda el nuevo restaurante en la base de datos
             Restaurante nuevoRestaurante = restauranteService.save(restaurante);

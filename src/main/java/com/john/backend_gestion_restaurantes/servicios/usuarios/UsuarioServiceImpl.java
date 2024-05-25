@@ -15,7 +15,7 @@ import com.john.backend_gestion_restaurantes.dto.CreateUserRequest;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
 import com.john.backend_gestion_restaurantes.modelos.UsuarioRol;
 import com.john.backend_gestion_restaurantes.repositorios.RepoUsuarios;
-import com.john.backend_gestion_restaurantes.servicios.imagenes.ImagenService;
+import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,8 +29,8 @@ public class UsuarioServiceImpl  implements UsuarioService{
     @Autowired
     private RepoUsuarios repoUsuarios;
 
-     @Autowired
-    private ImagenService imagenService;
+    @Autowired
+    private FirebaseStorageService firebaseStorageService;
 
     private  String newFileName;
 
@@ -64,7 +64,11 @@ public class UsuarioServiceImpl  implements UsuarioService{
 
     public Usuario createUser(CreateUserRequest createUserRequest, EnumSet<UsuarioRol> roles) {
         try {
-            newFileName = imagenService.saveImage(createUserRequest.getImagen());
+            if (createUserRequest.getImagen() != null && !createUserRequest.getImagen().isEmpty()) {
+                newFileName = firebaseStorageService.uploadBase64Image(createUserRequest.getImagen());
+            }else{
+                newFileName = "b64b193d-3cc3-4ee9-ae33-b2033dbdceb9.jpeg";
+            }
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error al guardar la imagen");
         }

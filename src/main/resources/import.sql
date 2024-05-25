@@ -1,17 +1,17 @@
 
-INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon1@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'john lopez', '627663f9-18c2-4335-90c9-bec4c8e49b3d.png', null, true);
-INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon2@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario dos', '627663f9-18c2-4335-90c9-bec4c8e49b3d.png', null, true);
-INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon3@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario tres', '627663f9-18c2-4335-90c9-bec4c8e49b3d.png', null, true);
-INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon4@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario cuatro', '627663f9-18c2-4335-90c9-bec4c8e49b3d.png', null, true);
+INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon1@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'john lopez', 'b64b193d-3cc3-4ee9-ae33-b2033dbdceb9.jpeg', null, true);
+INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon2@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario dos', 'b64b193d-3cc3-4ee9-ae33-b2033dbdceb9.jpeg', null, true);
+INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon3@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario tres', 'b64b193d-3cc3-4ee9-ae33-b2033dbdceb9.jpeg', null, true);
+INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon4@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario cuatro', 'b64b193d-3cc3-4ee9-ae33-b2033dbdceb9.jpeg', null, true);
 
-INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (1, 'La Parrilla de Juan', 'Madrid', 'Madrid', '123456789', '69ced7ba-7965-4a5c-bdf0-163a1ecb0c38.jpeg');
-INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (1, 'Sabores de María', 'Barcelona', 'Barcelona', '987654321', 'bf04c12b-06b5-4ead-84d6-0ac8b77024e1.jpeg');
-INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (2, 'Pizzería Pepito', 'Valencia', 'Valencia', '555666777', 'f7218948-fba6-4b51-b36c-b8a007f4a533.jpeg');
+INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (1, 'La Parrilla de Juan', 'Madrid', 'Madrid', '123456789', 'ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg');
+INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (1, 'Sabores de María', 'Barcelona', 'Barcelona', '987654321', 'ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg');
+INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (2, 'Pizzería Pepito', 'Valencia', 'Valencia', '555666777', 'ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg');
 
 
-INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (1, 'Menú del Día', 'Menú especial del día con platos variados', 12.99,'69ced7ba-7965-4a5c-bdf0-163a1ecb0c38.jpeg');
-INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (1, 'Menú Infantil', 'Menú para niños con platos divertidos y nutritivos', 7.50, '69ced7ba-7965-4a5c-bdf0-163a1ecb0c38.jpeg');
-INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (2, 'Menú Degustación', 'Menú con una selección de platos gourmet', 25.99, '69ced7ba-7965-4a5c-bdf0-163a1ecb0c38.jpeg');
+INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (1, 'Menú del Día', 'Menú especial del día con platos variados', 12.99,'d4ac2c7d-2df2-4aaf-92fa-c10cb75935ba.jpeg');
+INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (1, 'Menú Infantil', 'Menú para niños con platos divertidos y nutritivos', 7.50, '472a8fb9-2f1d-46f0-b820-10c290888f0e.jpeg');
+INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (2, 'Menú Degustación', 'Menú con una selección de platos gourmet', 25.99, '332de2e5-eb84-4792-baae-2adfe22deb7e.jpeg');
 
 INSERT INTO calificaciones (puntuacion, id_restaurante, id_usuario, comentario) VALUES ('5', '1', '1', 'Excelente servicio, volveré pronto.');
 INSERT INTO calificaciones (puntuacion, id_restaurante, id_usuario, comentario) VALUES ('4', '2', '2', 'La comida estuvo deliciosa, pero el servicio fue un poco lento.');

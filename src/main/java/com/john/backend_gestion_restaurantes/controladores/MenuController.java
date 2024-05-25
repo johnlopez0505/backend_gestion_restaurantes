@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.john.backend_gestion_restaurantes.modelos.Menu;
 import com.john.backend_gestion_restaurantes.modelos.Restaurante;
+import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
 import com.john.backend_gestion_restaurantes.servicios.menu.MenuService;
 import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
 
@@ -41,14 +42,11 @@ public class MenuController {
     @Autowired
     private RestauranteService restauranteService;
 
-    // public MenuController(MenuService menuService, RestauranteService restauranteService){
-    //     this.menuService = menuService;
-    //     this.restauranteService = restauranteService;
-    // }
+   @Autowired
+   private FirebaseStorageService firebaseStorageService;
 
     @GetMapping("/menus")
     public ResponseEntity<Object> findAll(){
-        //System.out.println("ingresa en buscar todos los menus ");
         try {
             List<Menu> menus = menuService.findAll();
             Map<String, Object> response = new HashMap<>();
@@ -61,7 +59,7 @@ public class MenuController {
                                    "nombre", menu.getNombre(),
                                    "descripcion", menu.getDescripcion(),
                                    "precio", menu.getPrecio(),
-                                   "imagen", menu.getImagen()
+                                   "imagen", firebaseStorageService.getFileUrl(menu.getImagen())
                                    )
                                 )
                             );
@@ -104,7 +102,7 @@ public class MenuController {
                                 "nombre", existingMenu.getNombre(),
                                 "descripcion", existingMenu.getDescripcion(),
                                 "precio", existingMenu.getPrecio(),
-                                "imagen", existingMenu.getImagen()
+                                "imagen", firebaseStorageService.getFileUrl(existingMenu.getImagen())
                                 )
                             );
             return ResponseEntity.ok(response);
@@ -133,6 +131,13 @@ public class MenuController {
             }
             Restaurante restaurante = optionalRestaurante.get();
             menu.setRestaurante(restaurante);
+            // Guardar la nueva imagen si existe
+            if (menu.getImagen() != null && !menu.getImagen().isEmpty()) {
+                String newFileName = firebaseStorageService.uploadBase64Image(menu.getImagen());
+                menu.setImagen(newFileName);
+            }else{
+                menu.setImagen("ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg");
+            }
             // Guarda el nuevo menú en tu base de datos
             Menu nuevoMenu = this.menuService.save(menu);
             // Devuelve una respuesta exitosa con el menú recién creado
@@ -143,7 +148,7 @@ public class MenuController {
                                 "nombre", nuevoMenu.getNombre(),
                                 "descripcion", nuevoMenu.getDescripcion(),
                                 "precio", nuevoMenu.getPrecio(),
-                                "imagen", nuevoMenu.getImagen()
+                                "imagen", firebaseStorageService.getFileUrl(nuevoMenu.getImagen())
                                 )
                             );
             return ResponseEntity.status(HttpStatus.CREATED).body(response);

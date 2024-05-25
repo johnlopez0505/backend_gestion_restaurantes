@@ -1,6 +1,7 @@
 package com.john.backend_gestion_restaurantes.dto;
 
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
+import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,16 +23,22 @@ public class UserResponse {
 
     // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     // protected LocalDateTime createdAt;
+    
 
 
-    public static UserResponse fromUser(Usuario user, String baseUrl) {
+    public static UserResponse fromUser(Usuario user, FirebaseStorageService firebaseStorageService) {
+
+        String rolesString = user.getRoles().toString();
+        if (rolesString.startsWith("[") && rolesString.endsWith("]")) {
+            rolesString = rolesString.substring(1, rolesString.length() - 1).toLowerCase();
+        }
 
         return UserResponse.builder()
                 .id(user.getId().toString())
                 .username(user.getUsername())
-                .imagen(user.getImagen() != null ? (baseUrl + user.getImagen()) : "sin imagen")
+                .imagen(firebaseStorageService.getFileUrl(user.getImagen()))
                 .fullName(user.getFullName())
-                .rol(user.getRoles().toString())
+                .rol(rolesString)
                 .build();  
     }
 
