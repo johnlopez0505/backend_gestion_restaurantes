@@ -9,7 +9,7 @@ INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, image
 INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (2, 'Panaceite Centro', 'Jaén', 'Jaén', '953 24 06 30', '5e7ef194-9452-4054-80fa-153b444f89e3.jpeg');
 
 
-INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (1, 'Menú del Día', 'Menú especial del día con platos variados', 12.99,'d4ac2c7d-2df2-4aaf-92fa-c10cb75935ba.jpeg');
+INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (1, 'Menú del Día', 'Menú especial del día con platos variados', 12.99,'17f3dd3c-9952-408e-8246-17435a27fbd7.jpeg');
 INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (1, 'Menú Infantil', 'Menú para niños con platos divertidos y nutritivos', 7.50, '472a8fb9-2f1d-46f0-b820-10c290888f0e.jpeg');
 INSERT INTO menus (id_restaurante, nombre, descripcion, precio,imagen) VALUES (2, 'Menú Degustación', 'Menú con una selección de platos gourmet', 25.99, '332de2e5-eb84-4792-baae-2adfe22deb7e.jpeg');
 
