@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -189,7 +191,13 @@ public class RestauranteController {
             existendRestaurante.setCiudad(restaurante.getCiudad());
             existendRestaurante.setProvincia(restaurante.getProvincia());
             existendRestaurante.setTelefono(restaurante.getTelefono());
-            existendRestaurante.setImagen(restaurante.getImagen());
+            // Guardar la nueva imagen si existe
+            if (restaurante.getImagen() != null && !restaurante.getImagen().isEmpty()) {
+                String newFileName = firebaseStorageService.updateFile(existendRestaurante.getImagen(), restaurante.getImagen());
+                existendRestaurante.setImagen(newFileName);
+            }else{
+                existendRestaurante.setImagen(existendRestaurante.getImagen());
+            }
             Restaurante editRestaurante = restauranteService.save(existendRestaurante);
             response.put("result",  "ok");
             response.put("restaurantes", Map.of("id",editRestaurante.getId(),
@@ -198,7 +206,7 @@ public class RestauranteController {
                                 "ciudad", editRestaurante.getCiudad(),
                                 "provincia", editRestaurante.getProvincia(),
                                 "telefono", editRestaurante.getTelefono(),
-                                "imagen", editRestaurante.getImagen()
+                                "imagen", firebaseStorageService.getFileUrl(editRestaurante.getImagen())
                             )
                         );
             return ResponseEntity.ok(response);
@@ -245,7 +253,17 @@ public class RestauranteController {
                         restauranteExistente.setTelefono(valor.toString());
                     break;
                     case "imagen":
-                       restauranteExistente.setImagen(valor.toString());
+                          // Guardar la nueva imagen si existe
+                            if (valor.toString() != null && ! valor.toString().isEmpty()) {
+                                String newFileName = "";
+                                try {
+                                    newFileName = firebaseStorageService.updateFile(restauranteExistente.getImagen(), valor.toString());
+                                } catch (IOException e) {
+                                    throw new  ResponseStatusException(HttpStatus.BAD_REQUEST, "Error al editar la imagen");
+                                }
+                                restauranteExistente.setImagen(newFileName);
+                            }
+
                         break;
                     default:
                         // Ignora campos desconocidos
@@ -284,9 +302,10 @@ public class RestauranteController {
             // Buscar el restaurante por su ID
             Optional<Restaurante> restauranteOptional = restauranteService.findById(id);
             Map<String, Object> response = new HashMap<>();
-            if (restauranteOptional.isPresent()) {
-                Restaurante restaurante = restauranteOptional.get();
-                // Si se encuentra el restaurante, eliminarlo de la base de datos
+            Restaurante restaurante = restauranteOptional.get();
+            // Si se encuentra el restaurante, eliminamos la imagen de firebase storege
+            String deleteResponse =firebaseStorageService.deleteFile(restaurante.getImagen());
+            if (restauranteOptional.isPresent() && deleteResponse.equals("ok")) {
                 restauranteService.deleteById(restaurante.getId().intValue());
                 // Devolver una respuesta indicando que el restaurante fue eliminado correctamente
                 response.put("result", "ok");
