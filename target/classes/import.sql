@@ -5,7 +5,7 @@ INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VAL
 INSERT INTO usuarios (username, password, full_name, imagen, token, enabled) VALUES ('lopezcon4@hotmail.com', '{bcrypt}$2a$10$EXZCJlb.Jk.Lo.4LFDROkujvBlUVrbjRz4r4oz/.hSnoramwDVt0y', 'Usuario cuatro', 'b64b193d-3cc3-4ee9-ae33-b2033dbdceb9.jpeg', null, true);
 
 INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (1, 'Pizzeria Da Ernesto', 'Jaén', 'Jaén', '953 26 67 28', '9be027ea-7150-4b85-a4a0-3cbde5448864.jpeg');
-INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (1, 'Restaurante Casa Pepe', 'Jaén', 'Jaén', '953 23 10 29', 'e5cc0dc6-4d0f-461a-8319-15519037d3f2.jpeg');
+INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (1, 'Restaurante Casa Pepe', 'Jaén', 'Jaén', '953 23 10 29', '55a1ba4d-fdfe-4da8-8c5d-795d383b24f2.jpeg');
 INSERT INTO restaurantes (id_usuario, nombre, ciudad, provincia, telefono, imagen) VALUES (2, 'Panaceite Centro', 'Jaén', 'Jaén', '953 24 06 30', '5e7ef194-9452-4054-80fa-153b444f89e3.jpeg');
 
 
