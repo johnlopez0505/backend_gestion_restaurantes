@@ -24,7 +24,7 @@ public class FirebaseConfig {
     @Bean
     public FirebaseApp initializeFirebaseApp() throws IOException  {
         //"/app/src/main/resources/images-firebase.json"
-        FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath);
+        FileInputStream serviceAccount = new FileInputStream("/app/src/main/resources/images-firebase.json");
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -42,13 +42,5 @@ public class FirebaseConfig {
     public Storage googleStorage() {
         return StorageOptions.getDefaultInstance().getService();
     }
-
-    // @Bean
-    // public Storage storage() throws IOException {
-    //     return StorageOptions.newBuilder()
-    //             .setCredentials(GoogleCredentials.fromStream(new FileInputStream("./gestion-reservas-firebase-adminsdk-wv09k-e14e5f5603.json")))
-    //             .build()
-    //             .getService();
-    // }
 
 }
