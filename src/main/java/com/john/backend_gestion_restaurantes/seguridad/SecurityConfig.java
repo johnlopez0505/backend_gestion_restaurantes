@@ -67,10 +67,10 @@ public class SecurityConfig {
                 .disable())
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/webjars/**", "/img/**", "/js/**", "/imagenes/**", 
-                                         "/api/auth/register", "/api/auth/login", "/firebase/upload", "/api/refreshtoken","/firebase/**")
+                                         "/api/auth/register", "/api/auth/login", "/firebase/upload", "/api/refreshtoken")
                         .permitAll()
 
-                        .requestMatchers("/api/auth/register/admin", "/api/usuarios", "/api/usuarios/**")
+                        .requestMatchers("/api/auth/register/admin", "/api/usuarios")
                         .hasRole("ADMIN")
 
                         .requestMatchers("/api/restaurantes/**","/api/menus/**", 
