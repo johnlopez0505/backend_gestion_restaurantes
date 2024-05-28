@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ import com.john.backend_gestion_restaurantes.dto.LoginRequest;
 import com.john.backend_gestion_restaurantes.dto.UserResponse;
 import com.john.backend_gestion_restaurantes.modelos.RefreshToken;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
+import com.john.backend_gestion_restaurantes.modelos.UsuarioRol;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.access.JwtProvider;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenException;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenRequest;
@@ -78,24 +80,31 @@ public class UsuarioController {
     public ResponseEntity<Object> obtenerTodosLosUsuarios() {
         try {
             List<Usuario> usuarios = usuarioService.findAllUsuarios();
+    
             Map<String, Object> response = new HashMap<>();
             if (!usuarios.isEmpty()) {
+                List<Map<String, Object>> usuariosResponse = usuarios.stream().map(usuario -> {
+                    String rolesString = usuario.getRoles().stream()
+                        .map(UsuarioRol::name) 
+                        .collect(Collectors.joining(", "));
+    
+                    return new HashMap<String, Object>() {{
+                        put("id", usuario.getId());
+                        put("username", usuario.getUsername());
+                        put("rol", rolesString);
+                        put("fullName", usuario.getFullName());
+                        put("imagen", usuario.getImagen() != null ? firebaseStorageService.getFileUrl(usuario.getImagen()) : null);
+                        put("enable", usuario.isEnabled());
+                        put("token", usuario.getToken());
+                    }};
+                }).collect(Collectors.toList());
+    
                 response.put("result", "ok");
-                response.put("usuarios", usuarios.stream().map(
-                   usuario -> Map.of("id",usuario.getId(),
-                                   "username",usuario.getUsername(),
-                                   "rol",usuario.getRoles(),
-                                   "fullName",usuario.getFullName(),
-                                   "imagen",firebaseStorageService.getFileUrl(usuario.getImagen()),
-                                   "enable",usuario.isEnabled(),
-                                   "token", usuario.getToken()
-                                   )
-                                )
-                            );
+                response.put("usuarios", usuariosResponse);
                 return ResponseEntity.ok(response);
             } else {
                 response.put("result", "ok");
-                response.put("message", "No se encontro ningun usuario en la base de datos");
+                response.put("message", "No se encontró ningún usuario en la base de datos");
                 return ResponseEntity.ok(response);
             }
         } catch (Exception e) {

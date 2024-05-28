@@ -70,7 +70,7 @@ public class SecurityConfig {
                                          "/api/auth/register", "/api/auth/login", "/firebase/upload", "/api/refreshtoken")
                         .permitAll()
 
-                        .requestMatchers("/api/auth/register/admin", "/api/usuarios")
+                        .requestMatchers("/api/auth/register/admin", "/api/usuarios/**")
                         .hasRole("ADMIN")
 
                         .requestMatchers("/api/restaurantes/**","/api/menus/**", 
