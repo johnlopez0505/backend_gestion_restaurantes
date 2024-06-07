@@ -39,6 +39,7 @@ public class Restaurante {
     private String provincia;
     private String telefono;
     private String imagen;
+    private String direccion;
 
     @CreatedBy
     private String createdBy;

@@ -9,14 +9,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateUserRequest {
-
+public class UsuarioDTO {
+    
+    private Long id;
     private String username;
-    private String password;
-    private String verifyPassword;
-    private String telefono;
-    private boolean enabled;
     private String imagen;
+    private String telefono;
     private String fullName;
-
+    private String rol;
+    private String refreshToken;
+    private String token;
 }

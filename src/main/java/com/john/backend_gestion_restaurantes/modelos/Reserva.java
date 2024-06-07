@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
@@ -40,13 +41,29 @@ public class Reserva {
     @JoinColumn(name = "id_restaurante")
     private Restaurante restaurante;
 
-    @CreatedDate
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    private LocalDateTime fechaYHora; // Columna para la fecha y hora de la reserva
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
+    @Column(nullable = false)
+    private LocalDateTime fechaYHora; 
+
+    @Column(nullable = false, length = 100)
+    private String nombreCliente;
+
+    @Column(nullable = false, length = 20)
+    private String telefonoCliente;
+
+    @Column(nullable = false, length = 100)
+    private String emailCliente;
+
+    @Column(nullable = false)
     private int numeroPersonas;
+
+    private String notas;
 
     @CreatedBy
     private String createdBy;
+
+    @CreatedDate
+    private LocalDateTime fechaCreacion;
 
 }

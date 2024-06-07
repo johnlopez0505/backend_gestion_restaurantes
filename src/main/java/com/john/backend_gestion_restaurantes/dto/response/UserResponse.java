@@ -1,4 +1,4 @@
-package com.john.backend_gestion_restaurantes.dto;
+package com.john.backend_gestion_restaurantes.dto.response;
 
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
 import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
@@ -17,13 +17,11 @@ public class UserResponse {
 
     protected String id;
     protected String username;
-    protected String imagen;
     protected String fullName;
+    protected String telefono;
+    protected boolean enabled;
     protected String rol;
-
-    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    // protected LocalDateTime createdAt;
-    
+    protected String imagen;
 
 
     public static UserResponse fromUser(Usuario user, FirebaseStorageService firebaseStorageService) {
@@ -36,9 +34,11 @@ public class UserResponse {
         return UserResponse.builder()
                 .id(user.getId().toString())
                 .username(user.getUsername())
-                .imagen(firebaseStorageService.getFileUrl(user.getImagen()))
                 .fullName(user.getFullName())
+                .telefono(user.getTelefono())
+                .enabled(user.isEnabled())
                 .rol(rolesString)
+                .imagen(firebaseStorageService.getFileUrl(user.getImagen()))
                 .build();  
     }
 

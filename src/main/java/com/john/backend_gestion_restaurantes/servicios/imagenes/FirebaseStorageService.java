@@ -62,28 +62,14 @@ public class FirebaseStorageService {
         return blob.getName();
     }
 
-    public String deleteFile(String publicUrl) throws IOException{
-        // Obtener el nombre del blob de la URL pública
-        //String blobName = publicUrl.substring(publicUrl.lastIndexOf('/') + 1, publicUrl.indexOf("?"));
-        /* 
-        if(blobName != "b64b193d-3cc3-4ee9-ae33-b2033dbdceb9.jpeg" && blobName != "ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg"){
-             // Eliminar el blob del Firebase Storage
+    public String deleteFile(String existingImage) throws IOException{
+        
+        if(existingImage != "b64b193d-3cc3-4ee9-ae33-b2033dbdceb9.jpeg" && existingImage != "ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg"){
+            // Eliminar el blob del Firebase Storage
             Bucket bucket = storageClient.bucket(bucketName);
-            Blob blob = bucket.get(blobName);
-            if (blob != null) {
-                blob.delete();
-                return "ok";
-            } else {
-                throw new IllegalArgumentException("La imagen no existe en Firebase Storage");
-            }
-        }else{
-            return "0k";
-        }
-       */
-        if(publicUrl != "b64b193d-3cc3-4ee9-ae33-b2033dbdceb9.jpeg" && publicUrl != "ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg"){
-                // Eliminar el blob del Firebase Storage
-            Bucket bucket = storageClient.bucket(bucketName);
-            Blob blob = bucket.get(publicUrl);
+            System.out.println("bucket: " + bucket);
+            Blob blob = bucket.get(existingImage);
+            System.out.println("blob: " + blob);
             if (blob != null) {
                 blob.delete();
                 return "ok";
@@ -95,9 +81,9 @@ public class FirebaseStorageService {
         }
     }
 
-    public String updateFile(String publicUrl, String newFile) throws IOException {
+    public String updateFile(String existingImage, String newFile) throws IOException {
         // Eliminar la imagen existente
-         deleteFile(publicUrl);
+         deleteFile(existingImage);
         // Subir la nueva imagen
         return uploadBase64Image(newFile);
     }

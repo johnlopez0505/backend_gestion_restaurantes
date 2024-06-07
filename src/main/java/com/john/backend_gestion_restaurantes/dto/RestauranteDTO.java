@@ -9,14 +9,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateUserRequest {
-
-    private String username;
-    private String password;
-    private String verifyPassword;
+public class RestauranteDTO {
+    private Long id;
+    private Long usuarioId;
+    private String nombre;
+    private String ciudad;
+    private String provincia;
     private String telefono;
-    private boolean enabled;
     private String imagen;
-    private String fullName;
-
+    private String direccion;
+   
 }

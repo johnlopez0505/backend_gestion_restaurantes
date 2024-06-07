@@ -2,7 +2,6 @@ package com.john.backend_gestion_restaurantes.dto;
 
 import java.time.LocalDateTime;
 
-import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -17,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ErrorDetails {
 
-    private HttpStatus status;
+    private String result;
     private String message;
     private String path;
 
@@ -25,9 +24,9 @@ public class ErrorDetails {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy hh:mm:ss")
     private LocalDateTime dateTime = LocalDateTime.now();
 
-    public static ErrorDetails of (HttpStatus status, String message, String path) {
+    public static ErrorDetails of (String result, String message, String path) {
         return ErrorDetails.builder()
-                .status(status)
+                .result(result)
                 .message(message)
                 .path(path)
                 .build();

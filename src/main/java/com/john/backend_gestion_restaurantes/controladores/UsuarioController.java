@@ -1,11 +1,8 @@
 package com.john.backend_gestion_restaurantes.controladores;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,16 +21,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.john.backend_gestion_restaurantes.dto.ChangePasswordRequest;
 import com.john.backend_gestion_restaurantes.dto.CreateUserRequest;
 import com.john.backend_gestion_restaurantes.dto.JwtUserResponse;
 import com.john.backend_gestion_restaurantes.dto.LoginRequest;
-import com.john.backend_gestion_restaurantes.dto.UserResponse;
+import com.john.backend_gestion_restaurantes.dto.response.UserResponse;
+import com.john.backend_gestion_restaurantes.dto.response.UsuarioResponse;
 import com.john.backend_gestion_restaurantes.modelos.RefreshToken;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
-import com.john.backend_gestion_restaurantes.modelos.UsuarioRol;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.access.JwtProvider;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenException;
 import com.john.backend_gestion_restaurantes.seguridad.jwt.refresh.RefreshTokenRequest;
@@ -77,102 +73,73 @@ public class UsuarioController {
 
 
     @GetMapping("/usuarios")
-    public ResponseEntity<Object> obtenerTodosLosUsuarios() {
+    public ResponseEntity<UsuarioResponse<List<UserResponse>>> obtenerTodosLosUsuarios() {
         try {
-            List<Usuario> usuarios = usuarioService.findAllUsuarios();
+            List<UserResponse> usuarios = usuarioService.findAllUsuarios();
     
-            Map<String, Object> response = new HashMap<>();
-            if (!usuarios.isEmpty()) {
-                List<Map<String, Object>> usuariosResponse = usuarios.stream().map(usuario -> {
-                    String rolesString = usuario.getRoles().stream()
-                        .map(UsuarioRol::name) 
-                        .collect(Collectors.joining(", "));
-    
-                    return new HashMap<String, Object>() {{
-                        put("id", usuario.getId());
-                        put("username", usuario.getUsername());
-                        put("rol", rolesString);
-                        put("fullName", usuario.getFullName());
-                        put("imagen", usuario.getImagen() != null ? firebaseStorageService.getFileUrl(usuario.getImagen()) : null);
-                        put("enable", usuario.isEnabled());
-                        put("token", usuario.getToken());
-                    }};
-                }).collect(Collectors.toList());
-    
-                response.put("result", "ok");
-                response.put("usuarios", usuariosResponse);
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("result", "ok");
-                response.put("message", "No se encontró ningún usuario en la base de datos");
-                return ResponseEntity.ok(response);
+            if (usuarios == null || usuarios.isEmpty()) {
+                UsuarioResponse<List<UserResponse>>
+                 response = new UsuarioResponse<>(
+                "error", "No hay usuarios almacenados en la base de datos", null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
+            UsuarioResponse<List<UserResponse>> response = new UsuarioResponse<>(
+            "ok", "Usuarios listados con éxito", usuarios);
+            return ResponseEntity.ok(response);
+        
         } catch (Exception e) {
-            // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("result", "error");
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al procesar la solicitud: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("get", "/api/usuarios");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            UsuarioResponse<List<UserResponse>> response = new UsuarioResponse<>(
+            "error", "Ocurrió un error al listar los usuarios: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     @GetMapping("/usuarios/{id}")
-    public ResponseEntity<Object> obtenerUsuarioPorId(@PathVariable Integer id) {
+    public ResponseEntity< UsuarioResponse<UserResponse>> obtenerUsuarioPorId(@PathVariable Integer id) {
         try {
-            Optional<Usuario> optionalUsuario = usuarioService.findUsuarioById(id);
-            Map<String, Object> response = new HashMap<>();
-            if (optionalUsuario.isPresent()) {
-                Usuario usuario = optionalUsuario.get();
-                response.put("result", "ok");
-                response.put("usuarios", Map.of("id",usuario.getId(),
-                                "username",usuario.getUsername(),
-                                "rol",usuario.getRoles(),
-                                "password",usuario.getPassword(),
-                                "fullName",usuario.getFullName(),
-                                "imagen",firebaseStorageService.getFileUrl(usuario.getImagen()),
-                                "enable",usuario.isEnabled(),
-                                "token", usuario.getToken()
-                                )
-                            );
+            Optional<Usuario> usuario = usuarioService.findUsuarioById(id);
+            if (!usuario.isPresent()) {
+                UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+                    "error", "No se encontró un usuario con el ID proporcionado", null);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                }
+                UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+                "ok", "Usuario listado con éxito", UserResponse.fromUser(usuario.get(), firebaseStorageService));
                 return ResponseEntity.ok(response);
-            }else{
-                // Manejo del caso en el que no se encuentra el restaurante
-                response.put("result", "error");
-                response.put("message", "No se encontró un usuario con el ID proporcionado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-           } catch (Exception e) {
-             // Manejo de la excepción
-             Map<String, Object> errorResponse = new HashMap<>();
-             errorResponse.put("result", "error");
-             errorResponse.put("details", "Se produjo un error al procesar la solicitud: " + e.getMessage());
-             errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-             errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-             errorResponse.put("message", "Se produjo un error al procesar la solicitud: " + e.getMessage());
-             errorResponse.put("timestamp", LocalDateTime.now());
-             errorResponse.put("get", "/api/usuarios/{id}");
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-           }
+        } catch (Exception e) {
+            UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "error", "Ocurrió un error al listar el Usuario", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
+    
 
     @PostMapping("/auth/register")
-    public ResponseEntity<?> createUserWithUserRole(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<UsuarioResponse<UserResponse> > createUserWithUserRole(@RequestBody CreateUserRequest createUserRequest) {
         Usuario user = usuarioService.createUserWithUserRole(createUserRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user, firebaseStorageService));
+        UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "ok", "Usuario listado con éxito", (UserResponse.fromUser(user, firebaseStorageService)));
+            return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/auth/register/empresario")
+    public ResponseEntity<UsuarioResponse<UserResponse>> createUserWithEntrepreneurRole(@RequestBody CreateUserRequest createUserRequest) {
+        Usuario user = usuarioService.createUserEntrepreneurRole(createUserRequest);
+        UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "ok", "Usuario listado con éxito", (UserResponse.fromUser(user, firebaseStorageService)));
+            return ResponseEntity.ok(response);
     }
 
     @PostMapping("/auth/register/admin")
-    public ResponseEntity<UserResponse> createUserWithAdminRole(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<UsuarioResponse<UserResponse>> createUserWithAdminRole(@RequestBody CreateUserRequest createUserRequest) {
         Usuario user = usuarioService.createUserWithAdminRole(createUserRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromUser(user, firebaseStorageService));
+        UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "ok", "Usuario listado con éxito", UserResponse.fromUser(user, firebaseStorageService));
+            return ResponseEntity.ok(response);
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<JwtUserResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<UsuarioResponse<JwtUserResponse>> login(@RequestBody LoginRequest loginRequest) {
         // Realizamos la autenticación
         Authentication authentication =
                 authManager.authenticate(
@@ -181,7 +148,6 @@ public class UsuarioController {
                                 loginRequest.getPassword()
                         )
                 );
-
         // Una vez realizada, la guardamos en el contexto de seguridad
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // Devolvemos una respuesta adecuada
@@ -192,157 +158,126 @@ public class UsuarioController {
         //solamente un token de refresco simultáneo
         refreshTokenService.deleteByUser(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(JwtUserResponse.of(user, token, refreshToken.getToken(), firebaseStorageService));
-
+        UsuarioResponse<JwtUserResponse> response = new UsuarioResponse<>(
+            "ok", "Usuario listado con éxito", JwtUserResponse.of(user, token, refreshToken.getToken(), firebaseStorageService));
+            return ResponseEntity.ok(response);
     }
 
 
-    @PutMapping("/usuarios/{id}")
-    public ResponseEntity<Object> updateMenu(@PathVariable Integer id, @RequestBody Usuario usuario) {
+    @PutMapping("/usuarios/edit/{id}")
+    public ResponseEntity<UsuarioResponse<UserResponse>> updateMenu(@PathVariable Integer id, @RequestBody Usuario usuario) {
         try {
             Optional<Usuario> optionalUsuario = usuarioService.findUsuarioById(id);
-            Map<String, Object> response = new HashMap<>();
             if (!optionalUsuario.isPresent()) {
-                // Manejo del caso en el que no se encuentra el usuario
-                response.put("result", "error");
-                response.put("message", "No se encontró un usuario con el ID proporcionado");
+                UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+                "error", "No se encontró un usuario con el ID proporcionado", null);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
             Usuario existingUsuario = optionalUsuario.get();
             existingUsuario.setFullName(usuario.getFullName());
-            existingUsuario.setUsername(usuario.getUsername());;
-            existingUsuario.setPassword(usuario.getPassword());;
-            existingUsuario.setImagen(usuario.getImagen());
+            existingUsuario.setTelefono(usuario.getTelefono());
             existingUsuario.setEnabled(usuario.isEnabled());
-            existingUsuario.setToken(usuario.getToken());
-            System.out.println("usuario existente " + existingUsuario);
+
+             // Guardar la nueva imagen si existe
+             if (usuario.getImagen() != null && !usuario.getImagen().isEmpty()) {
+                String newFileName = 
+                       firebaseStorageService.updateFile(existingUsuario.getImagen(), usuario.getImagen());
+                existingUsuario.setImagen(newFileName);
+            }
+
             // Guarda el usuario editado en tu base de datos
             Usuario nuevoUsuario = usuarioService.createUsuario(existingUsuario);
             // Devuelve una respuesta exitosa con el usuario editado
-            response.put("result", "ok");
-            response.put("usuarios", Map.of("id",nuevoUsuario.getId(),
-                            "username",nuevoUsuario.getUsername(),
-                            "password",nuevoUsuario.getPassword(),
-                            "fullName",nuevoUsuario.getFullName(),
-                            "imagen",nuevoUsuario.getImagen(),
-                            "enable",nuevoUsuario.isEnabled(),
-                            "token", nuevoUsuario.getToken()
-                            )
-                        );
+            UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "ok", "Usuario editado con éxito", UserResponse.fromUser(nuevoUsuario, firebaseStorageService));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al actualizar el usuario : " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("put", "/api/usuarios");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "error", "Ocurrió un error al editar el Usuario: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    @PatchMapping("/usuarios/{id}")
-    public ResponseEntity<Object> actualizarRestaurantePatch(@PathVariable Integer id,  @RequestBody Map<String, Object> updates) {
+    @PatchMapping("/usuarios/edit/{id}")
+    public  ResponseEntity<UsuarioResponse<UserResponse>>  actualizarRestaurantePatch(@PathVariable Integer id,  @RequestBody Map<String, Object> updates) {
         try {
             Optional<Usuario> optionalUsuario = usuarioService.findUsuarioById(id);
-            Map<String, Object> response = new HashMap<>();
             if (!optionalUsuario.isPresent()) {
-                // Manejo del caso en el que no se encuentra el usuario
-                response.put("result", "error");
-                response.put("message", "No se encontró un usuario con el ID proporcionado");
+                UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+                "error", "No se encontró un usuario con el ID proporcionado", null);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
             
             Usuario usuarioExistente = optionalUsuario.get();
             // Actualizar cada campo proporcionado en el objeto JSON de actualizaciones
-            updates.forEach((campo, valor) -> {
+            for (Map.Entry<String, Object> entry : updates.entrySet()) {
+                String campo = entry.getKey();
+                Object valor = entry.getValue();
                 switch (campo) {
                     case "fullName":
-                       usuarioExistente.setFullName(valor.toString());
-                        break;
-                    case "username":
-                       usuarioExistente.setUsername(valor.toString());
-                        break;
-                    case "password":
-                       usuarioExistente.setPassword(valor.toString());
+                        if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                            usuarioExistente.setFullName(valor.toString());
+                        }
                         break;
                     case "imagen":
-                       usuarioExistente.setImagen(valor.toString());
+                        // Guardar la nueva imagen si existe
+                        if (valor.toString() != null && ! valor.toString().isEmpty()) {
+                            String newFileName = firebaseStorageService.updateFile(
+                                usuarioExistente.getImagen(), valor.toString());
+                            usuarioExistente.setImagen(newFileName);
+                        }
                         break;
                     case "enable":
-                        usuarioExistente.setEnabled((boolean)valor);;
+                        if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                            usuarioExistente.setEnabled((boolean)valor);
+                        }
                         break;
-                    case "token":
-                        usuarioExistente.setToken(valor.toString());
+                    case "telefono":
+                        if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                            usuarioExistente.setTelefono(valor.toString());
+                        }
                         break;
                     default:
-                        // Ignora campos desconocidos
-                        //response.put(campo, "No se encontró parametro");
-                        break;
+                        UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+                        "error", "No se encontró parametro: " + campo,  null);
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 }
-            });
+            };
             Usuario editUsuario = usuarioService.createUsuario(usuarioExistente);
-           // Devuelve una respuesta exitosa con el usuario editado
-           response.put("result", "ok");
-           response.put("usuarios", Map.of("id",editUsuario.getId(),
-                           "username",editUsuario.getUsername(),
-                           "password",editUsuario.getPassword(),
-                           "fullName",editUsuario.getFullName(),
-                           "imagen",editUsuario.getImagen(),
-                           "enable",editUsuario.isEnabled(),
-                           "token", editUsuario.getToken()
-                           )
-                       );
-           return ResponseEntity.ok(response);
+            UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "ok", "Usuario editado con éxito", UserResponse.fromUser(editUsuario, firebaseStorageService));
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al actualizar el usuario: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("path", "/api/usuarios");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "error", "Ocurrió un error al editar el Usuario: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
 
-    @DeleteMapping("/usuarios/{id}")
-    public ResponseEntity<Object> deleteUsuario(@PathVariable Integer id) {
+    @DeleteMapping("/usuarios/delete/{id}")
+    public ResponseEntity< UsuarioResponse<UserResponse>> deleteUsuario(@PathVariable Integer id) {
         try {
             // Buscar el usuario por su ID
-            Optional<Usuario> usuarioOptional = usuarioService.findUsuarioById(id);
-            Map<String, Object> response = new HashMap<>();
-            if (usuarioOptional.isPresent()) {
-                Usuario usuario = usuarioOptional.get();
-                // Si se encuentra el usuario, eliminarlo de la base de datos
-                usuarioService.deleteUsuario(usuario.getId().intValue());
-                // Devolver una respuesta indicando que el usuario fue eliminado correctamente
-                response.put("result", "ok");
-                response.put("message", "El usuario se eliminó correctamente");
-                return ResponseEntity.ok(response);
-            } else {
-                // Si no se encuentra el usuario con el ID proporcionado, 
-                // devolver una respuesta indicando que no se encontró el usuario
-                response.put("result", "error");
-                response.put("message", "No se encontró un Usuario con el ID proporcionado");
+            Optional<Usuario> optionalUsuario = usuarioService.findUsuarioById(id);
+            if (!optionalUsuario.isPresent()) {
+                UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+                "error", "No se encontró un usuario con el ID proporcionado", null);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
+            Usuario usuario = optionalUsuario.get();
+            // Eliminar el usuario de la base de datos
+            usuarioService.deleteUsuario(usuario.getId().intValue());
+            // Devuelve una respuesta exitosa
+            UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "ok", "Usuario eliminado con éxito",null);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-             // Manejo de la excepción
-             Map<String, Object> errorResponse = new HashMap<>();
-             errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-             errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-             errorResponse.put("message", "Se produjo un error al eliminar el usuario: " + e.getMessage());
-             errorResponse.put("timestamp", LocalDateTime.now());
-             errorResponse.put("delete", "/api/usuarios/{id}");
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "error", "Ocurrió un error al eliminar el Usuario: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
-   
 
     @PostMapping("/refreshtoken")
     public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
@@ -353,13 +288,16 @@ public class UsuarioController {
                 .map(RefreshToken::getUser)
                 .map(user -> {
                     String token = jwtProvider.generateToken(user);
+                    user.setToken(token);
                     refreshTokenService.deleteByUser(user);
                     RefreshToken refreshToken2 = refreshTokenService.createRefreshToken(user);
-                    return ResponseEntity.status(HttpStatus.CREATED)
-                            .body(JwtUserResponse.builder()
-                                    .token(token)
-                                    .refreshToken(refreshToken2.getToken())
-                                    .build());
+                    // return ResponseEntity.status(HttpStatus.CREATED)
+                    //         .body(JwtUserResponse.builder()
+                    //                 .token(token)
+                    //                 .refreshToken(refreshToken2.getToken())
+                    //                 .build());
+                    JwtUserResponse jwtUserResponse = JwtUserResponse.of(user, token, refreshToken2.getToken(), firebaseStorageService);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(jwtUserResponse);
                 })
                 .orElseThrow(() -> new RefreshTokenException("Refresh token not found"));
 
@@ -368,32 +306,33 @@ public class UsuarioController {
 
 
     @PutMapping("/usuarios/changePassword")
-    public ResponseEntity<UserResponse> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
+    public ResponseEntity<UsuarioResponse<UserResponse>> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
                                                        @AuthenticationPrincipal Usuario loggedUser,
                                                        HttpServletRequest request) {
-
-        // Este código es mejorable.
-        // La validación de la contraseña nueva se puede hacer con un validador.
-        // La gestión de errores se puede hacer con excepciones propias
         try {
-            if (usuarioService.passwordMatch(loggedUser, changePasswordRequest.getOldPassword())) {
-                Optional<Usuario> modified = usuarioService.editPassword(
-                    loggedUser.getId().intValue(), 
-                    changePasswordRequest.getNewPassword());
-                if (modified.isPresent())
-                    return ResponseEntity.ok(UserResponse.fromUser(modified.get(), firebaseStorageService));
-            } else {
-                // Lo ideal es que esto se gestionara de forma centralizada
-                // Se puede ver cómo hacerlo en la formación sobre Validación con Spring Boot
-                // y la formación sobre Gestión de Errores con Spring Boot
-                throw new RuntimeException();
+            if (!usuarioService.passwordMatch(loggedUser, changePasswordRequest.getOldPassword())) {
+                UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+                    "error", " La contraseña antigua no coincide.", null);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
-        } catch (RuntimeException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password Data Error");
+            Optional<Usuario> modified = usuarioService.editPassword(loggedUser.getId().intValue(), 
+                                        changePasswordRequest.getNewPassword());
+            
+            if (!modified.isPresent()) {
+                UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+                "error", "No se pudo cambiar la contraseña", null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            // Devuelve una respuesta exitosa
+            UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "ok", "Contraseña editada con éxito",null);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
+            "error", "Ocurrió un error al editar la contraseña: " +e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-
-        return null;
     }
-
-
+    
 }

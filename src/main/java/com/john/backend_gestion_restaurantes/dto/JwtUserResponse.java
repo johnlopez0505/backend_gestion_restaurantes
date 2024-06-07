@@ -1,6 +1,7 @@
 package com.john.backend_gestion_restaurantes.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.john.backend_gestion_restaurantes.dto.response.UserResponse;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
 import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
 
@@ -27,7 +28,9 @@ public class JwtUserResponse extends UserResponse {
         id = userResponse.getId();
         username = userResponse.getUsername();
         fullName = userResponse.getFullName();
+        telefono = userResponse.getTelefono();
         imagen = userResponse.getImagen();
+        enabled = userResponse.isEnabled();
         rol = userResponse.getRol();
     }
 

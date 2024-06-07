@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.john.backend_gestion_restaurantes.dto.CreateUserRequest;
+import com.john.backend_gestion_restaurantes.dto.response.UserResponse;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
 import com.john.backend_gestion_restaurantes.modelos.UsuarioRol;
 import com.john.backend_gestion_restaurantes.repositorios.RepoUsuarios;
@@ -36,8 +38,11 @@ public class UsuarioServiceImpl  implements UsuarioService{
 
 
     @Override
-    public List<Usuario> findAllUsuarios() {
-        return repoUsuarios.findAll();
+    public List<UserResponse> findAllUsuarios() {
+        List<Usuario> usuarios = repoUsuarios.findAll();
+         return usuarios.stream()
+        .map(usuario -> UserResponse.fromUser(usuario, firebaseStorageService))
+        .collect(Collectors.toList());
     }
 
     @Override
@@ -76,6 +81,7 @@ public class UsuarioServiceImpl  implements UsuarioService{
                 .username(createUserRequest.getUsername())
                 .password(passwordEncoder.encode(createUserRequest.getPassword()))
                 .imagen(newFileName)
+                .telefono(createUserRequest.getTelefono())
                 .fullName(createUserRequest.getFullName())
                 .roles(roles)
                 .build();
@@ -86,6 +92,12 @@ public class UsuarioServiceImpl  implements UsuarioService{
     public Usuario createUserWithUserRole(CreateUserRequest createUserRequest) {
         return createUser(createUserRequest, EnumSet.of(UsuarioRol.USUARIO));
     }
+
+    @Override
+    public Usuario createUserEntrepreneurRole(CreateUserRequest createUserRequest) {
+        return createUser(createUserRequest, EnumSet.of(UsuarioRol.EMPRESARIO));
+    }
+
 
     public Usuario createUserWithAdminRole(CreateUserRequest createUserRequest) {
         return createUser(createUserRequest, EnumSet.of(UsuarioRol.ADMIN));
@@ -105,5 +117,6 @@ public class UsuarioServiceImpl  implements UsuarioService{
                 }).or(() -> Optional.empty());
     }
 
+    
 
 }
