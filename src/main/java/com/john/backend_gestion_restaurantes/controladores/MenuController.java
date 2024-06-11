@@ -100,7 +100,7 @@ public class MenuController {
         } catch (Exception e) {
             // Manejo de la excepción
             MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
-                "error", "Se produjo un error al liostar el menú: " + e.getMessage(), null);
+                "error", "Se produjo un error al listar el menú: " + e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     } 
@@ -116,9 +116,8 @@ public class MenuController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
     
-            String userId = String.valueOf(((Usuario) authentication.getPrincipal()).getId());
-            Optional<Restaurante> restauranteOptional = restauranteService.findRestauranteById(Integer.parseInt(userId));
-            System.out.println(restauranteOptional);
+            //String userId = String.valueOf(((Usuario) authentication.getPrincipal()).getId());
+            Optional<Restaurante> restauranteOptional = restauranteService.findRestauranteById(id);
 
             if (!restauranteOptional.isPresent()) {
             MenuResponse<MenuDTO> response = new MenuResponse<>(
@@ -132,7 +131,7 @@ public class MenuController {
             if (!(menu.getPrecio() instanceof Double)) {
                 // Manejar el caso en el que el valor no sea un Double
                 MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
-                    "error", "El precio proporcionado no es un número válido debe tener decimales", null);
+                    "error", "El precio proporcionado no es un número válido", null);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
 
@@ -199,7 +198,7 @@ public class MenuController {
             if (!(menu.getPrecio() instanceof Double)) {
                 // Manejar el caso en el que el valor no sea un Double
                 MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
-                    "error", "El precio proporcionado no es un número válido debe tener decimales", null);
+                    "error", "El precio proporcionado no es un número válido.", null);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
             // Guarda el nuevo menú en tu base de datos

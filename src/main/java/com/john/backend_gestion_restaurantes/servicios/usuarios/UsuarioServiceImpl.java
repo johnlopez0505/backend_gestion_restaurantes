@@ -69,6 +69,10 @@ public class UsuarioServiceImpl  implements UsuarioService{
 
     public Usuario createUser(CreateUserRequest createUserRequest, EnumSet<UsuarioRol> roles) {
         try {
+            if (repoUsuarios.existsByUsername(createUserRequest.getUsername())) {
+                throw new RuntimeException("El correo electrónico ya está en uso: ");
+            }
+
             if (createUserRequest.getImagen() != null && !createUserRequest.getImagen().isEmpty()) {
                 newFileName = firebaseStorageService.uploadBase64Image(createUserRequest.getImagen());
             }else{

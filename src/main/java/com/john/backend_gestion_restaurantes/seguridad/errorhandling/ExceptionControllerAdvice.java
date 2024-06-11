@@ -1,10 +1,13 @@
 package com.john.backend_gestion_restaurantes.seguridad.errorhandling;
 
 import com.john.backend_gestion_restaurantes.dto.ErrorDetails;
+import com.john.backend_gestion_restaurantes.dto.ErrorValidation;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -63,12 +67,16 @@ public class ExceptionControllerAdvice  {
                 ));
     }
 
+
+
+   
+
     @ExceptionHandler({DataIntegrityViolationException.class})
     public ResponseEntity<?> dataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErrorDetails.of(
                     "error",
-                    "El correo electrónico ya está en uso",
+                    ex.getMessage(),
                     request.getRequestURI()
                 ));
     }
@@ -92,22 +100,20 @@ public class ExceptionControllerAdvice  {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
+    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body( ErrorDetails.of(
-                "error",
-                ex.getMessage(),
-                request.getRequestURI()));
+                .body(ErrorValidation.of(
+                        "error",
+                        errors,
+                        request.getRequestURI()));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleAllUncaughtException(Exception ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ErrorDetails.of(
-                    "error", 
-                    ex.getMessage(), 
-                    request.getRequestURI()));
-    }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException ex, HttpServletRequest request) {
@@ -122,6 +128,24 @@ public class ExceptionControllerAdvice  {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Object> handleNoSuchElementException(NoSuchElementException ex, HttpServletRequest request) {
         return ResponseEntity.status( HttpStatus.NOT_FOUND)
+        .body(ErrorDetails.of(
+                    "error", 
+                    ex.getMessage(), 
+                    request.getRequestURI()));
+    }
+
+    // @ExceptionHandler(DataIntegrityViolationException.class)
+    // public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
+    //     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+    //     .body(ErrorDetails.of(
+    //         "error", 
+    //         " Los datos proporcionados no son válidos. Verifique que todos los campos obligatorios estén completos.",
+    //         request.getRequestURI()));
+    // }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleAllUncaughtException(Exception ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ErrorDetails.of(
                     "error", 
                     ex.getMessage(), 

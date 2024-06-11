@@ -5,6 +5,7 @@
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/dto/LoginRequest.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/dto/UsuarioDTO.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/servicios/calificacion/CalificacionServiceImpl.java
+/home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/dto/ErrorValidation.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/dto/response/MenuResponse.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/seguridad/jwt/refresh/RefreshTokenRepository.java
 /home/john-lopez/Escritorio/backend_gestion_restaurantes/src/main/java/com/john/backend_gestion_restaurantes/repositorios/RepoCalificacion.java

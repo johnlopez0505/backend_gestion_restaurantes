@@ -10,4 +10,5 @@ import com.john.backend_gestion_restaurantes.modelos.Usuario;
 @Repository
 public interface RepoUsuarios extends JpaRepository<Usuario, Integer>{
     Optional<Usuario> findFirstByUsername(String username);
+    boolean existsByUsername(String username);
 } 

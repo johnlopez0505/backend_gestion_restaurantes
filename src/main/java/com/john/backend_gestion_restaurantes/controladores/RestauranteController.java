@@ -26,6 +26,7 @@ import com.john.backend_gestion_restaurantes.modelos.Restaurante;
 import com.john.backend_gestion_restaurantes.modelos.Usuario;
 import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
 import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
+import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
 
 
 @RestController
@@ -34,6 +35,9 @@ public class RestauranteController {
 
     @Autowired
     private RestauranteService restauranteService;
+
+    @Autowired
+    private UsuarioService usuarioService;
 
     @Autowired
     private FirebaseStorageService firebaseStorageService;
@@ -103,8 +107,14 @@ public class RestauranteController {
                     "error", "El usuario no esta autorizado", null);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
-            Usuario  user = (Usuario) authentication.getPrincipal();
-            System.out.println("este es el usuario " + user);
+            Optional<Usuario> optionalUser = usuarioService.findUsuarioById(id);
+            if (!optionalUser.isPresent()) {
+                RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                    "error", "No se encontró un usuario con el ID proporcionado", null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            //Usuario  user = (Usuario) authentication.getPrincipal();
+            Usuario user = optionalUser.get();
             restaurante.setUsuario(user);
 
             // Guardar la nueva imagen si existe

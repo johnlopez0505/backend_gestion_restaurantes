@@ -38,6 +38,7 @@ import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageS
 import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -115,26 +116,26 @@ public class UsuarioController {
     
 
     @PostMapping("/auth/register")
-    public ResponseEntity<UsuarioResponse<UserResponse> > createUserWithUserRole(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<UsuarioResponse<UserResponse> > createUserWithUserRole(@Valid @RequestBody CreateUserRequest createUserRequest) {
         Usuario user = usuarioService.createUserWithUserRole(createUserRequest);
         UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
-            "ok", "Usuario listado con éxito", (UserResponse.fromUser(user, firebaseStorageService)));
+            "ok", "Usuario registrado con éxito", (UserResponse.fromUser(user, firebaseStorageService)));
             return ResponseEntity.ok(response);
     }
 
     @PostMapping("/auth/register/empresario")
-    public ResponseEntity<UsuarioResponse<UserResponse>> createUserWithEntrepreneurRole(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<UsuarioResponse<UserResponse>> createUserWithEntrepreneurRole(@Valid @RequestBody CreateUserRequest createUserRequest) {
         Usuario user = usuarioService.createUserEntrepreneurRole(createUserRequest);
         UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
-            "ok", "Usuario listado con éxito", (UserResponse.fromUser(user, firebaseStorageService)));
+            "ok", "Usuario registrado con éxito", (UserResponse.fromUser(user, firebaseStorageService)));
             return ResponseEntity.ok(response);
     }
 
     @PostMapping("/auth/register/admin")
-    public ResponseEntity<UsuarioResponse<UserResponse>> createUserWithAdminRole(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<UsuarioResponse<UserResponse>> createUserWithAdminRole(@Valid @RequestBody CreateUserRequest createUserRequest) {
         Usuario user = usuarioService.createUserWithAdminRole(createUserRequest);
         UsuarioResponse<UserResponse> response = new UsuarioResponse<>(
-            "ok", "Usuario listado con éxito", UserResponse.fromUser(user, firebaseStorageService));
+            "ok", "Usuario registrado con éxito", UserResponse.fromUser(user, firebaseStorageService));
             return ResponseEntity.ok(response);
     }
 
