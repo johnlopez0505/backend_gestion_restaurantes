@@ -54,7 +54,7 @@ public class FirebaseConfig {
         //"/app/src/main/resources/images-firebase.json"
         //firebaseConfigPath
         try {
-            FileInputStream serviceAccount = new FileInputStream("/app/src/main/resources/images-firebase.json");
+            FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath);
 
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))

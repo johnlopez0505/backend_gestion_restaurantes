@@ -317,13 +317,13 @@ En este proyecto, se utilizará Firebase Storage para almacenar las imágenes de
 
 3. **Configurar Firebase Storage**: Una vez que tu proyecto esté creado, navega a la sección "Storage" en el menú de la izquierda y haz clic en "Comenzar" para habilitar Firebase Storage.
 
-   ![Firebase Storage](img/firebase.png)
+   ![Firebase Storage](documentacion/img/firebase.png)
 
 #### 2. Obtener la Clave de Servicio
 
 1. **Generar Clave de Servicio**: Ve a la configuración del proyecto (icono de engranaje) y selecciona "Cuentas de servicio". Haz clic en "Generar nueva clave privada" para descargar un archivo JSON con las credenciales de tu proyecto.
 
-   ![Firebase Service Account](img/firebase-.png)
+   ![Firebase Service Account](documentacion/img/firebase-.png)
 
 
 #### Configurar Firebase en Spring Boot
@@ -432,7 +432,7 @@ necesarios para autenticación con `token` y `refreshToken`.
 1. Tener Postman instalado.
 2. Contar con el `token` de acceso y `refreshToken` proporcionados por tu sistema de autenticación luego de hacer login.
 
-![POST http://localhost:8080/api/auth/login](img/post-login.png)
+![POST http://localhost:8080/api/auth/login](documentacion/img/post-login.png)
 
 #### Configuración de Postman
 
@@ -461,13 +461,13 @@ necesarios para autenticación con `token` y `refreshToken`.
     - **Key:** `Authorization`
     - **Value:** `Bearer tu_token_de_acceso_aqui`
       
-![Token](img/Token.png)
+![Token](documentacion/img/Token.png)
 
 3. Añade otro encabezado con el `refreshToken`:
     - **Key:** `Refresh-Token`
     - **Value:** `tu_token_de_refresco_aqui`
 
-![RefreshToken](img/refreshToken.png)
+![RefreshToken](documentacion/img/refreshToken.png)
 
 4. Añade un encabezado de tipo de contenido:
     - **Key:** `Content-Type`
@@ -479,7 +479,7 @@ necesarios para autenticación con `token` y `refreshToken`.
 1. Haz clic en el botón **Send**.
 2. Revisa la respuesta de la API en la pestaña **Body** de Postman.
 
-![GET http://localhost:8080/api/usuarios](img/get-usuarios.png)
+![GET http://localhost:8080/api/usuarios](documentacion/img/get-usuarios.png)
 
 #### Ejemplo de Configuración
 
@@ -544,7 +544,7 @@ Para iniciar tu proyecto, ejecuta el siguiente comando:
 Este comando iniciará el servidor de desarrollo y te proporcionará un código QR. Puedes escanear este código QR con la
 aplicación Expo Go en tu dispositivo móvil para ver tu aplicación en tiempo real.
 
-![Codigo QR expo](img/qr-expo.png)
+![Codigo QR expo](documentacion/img/qr-expo.png)
 
 Uso de la Aplicación Expo Go
 Descarga la aplicación Expo Go desde la App Store o Google Play Store en tu dispositivo móvil. Escanea el código QR
@@ -588,7 +588,7 @@ Nota: Para compilar para iOS, necesitas una cuenta de desarrollador de Apple y u
 
 ### Diagrama de Arquitectura de Aplicación
 
-![Diagrama de Arquitectura](img/diagramaArquitectura.png)
+![Diagrama de Arquitectura](documentacion/img/diagramaArquitectura.png)
 
 #### Componentes Principales:
 
@@ -725,11 +725,11 @@ se distribuyen entre los diferentes roles de usuarios.
 El uso de UML, en particular los Diagramas de Casos de Uso, facilita la comprensión y comunicación de los requerimientos
 y funcionalidades del sistema tanto para desarrolladores como para usuarios finales.
 
-![Diagrama Casos de Usos](img/Diagrama_de_casos_de_uso.png)
+![Diagrama Casos de Usos](documentacion/img/Diagrama_de_casos_de_uso.png)
 
 ### Diagrama Entidad-Relación
 
-![Diagrama Entidad-Relación](img/ER.png)
+![Diagrama Entidad-Relación](documentacion/img/ER.png)
 
 El diagrama entidad-relación describe la estructura de la base de datos y las relaciones entre las entidades principales,
 tales como `usuarios`, `restaurantes`, `reservas`, `menu` y `calificaciones_opiniones`.
@@ -832,7 +832,7 @@ tales como `usuarios`, `restaurantes`, `reservas`, `menu` y `calificaciones_opin
 @enduml
 ```
 
-![Diagrama de clase](img/diagrama-clases.png)
+![Diagrama de clase](documentacion/img/diagrama-clases.png)
 
 
 
