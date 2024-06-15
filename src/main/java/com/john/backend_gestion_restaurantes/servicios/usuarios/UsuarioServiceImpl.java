@@ -19,14 +19,16 @@ import com.john.backend_gestion_restaurantes.modelos.UsuarioRol;
 import com.john.backend_gestion_restaurantes.repositorios.RepoUsuarios;
 import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class UsuarioServiceImpl  implements UsuarioService{
 
     @Autowired
-    private final PasswordEncoder passwordEncoder;
+    private  PasswordEncoder passwordEncoder;
 
     @Autowired
     private RepoUsuarios repoUsuarios;
@@ -35,6 +37,7 @@ public class UsuarioServiceImpl  implements UsuarioService{
     private FirebaseStorageService firebaseStorageService;
 
     private  String newFileName;
+
 
 
     @Override
