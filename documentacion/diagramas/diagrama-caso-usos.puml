@@ -1,0 +1,77 @@
+@startuml Diagrama de casos de uso
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor Cliente as "Cliente"
+actor Admin as "Admin"
+actor Empresario as "Empresario"
+
+rectangle "Aplicación TastyGo" {
+    usecase "Listar Restaurantes" as ListarRestaurantes
+    usecase "Ver Detalles del Restaurante" as VerDetallesRestaurante
+    usecase "Hacer Reserva" as HacerReserva
+    usecase "Listar Menús" as ListarMenus
+    usecase "Buscar Restaurantes" as BuscarRestaurantes
+    usecase "Editar Reserva" as EditarReserva
+    usecase "Hacer Comentarios" as HacerComentarios
+    usecase "Añadir a Favoritos" as AnadirFavoritos
+
+    usecase "Añadir Restaurante" as AnadirRestaurante
+    usecase "Editar Restaurante" as EditarRestaurante
+    usecase "Añadir Menús" as AnadirMenus
+    usecase "Editar Menús" as EditarMenus
+    usecase "Ver Reservas" as VerReservas
+    usecase "Editar Reservas" as EditarReservas
+
+    usecase "Gestionar Usuarios" as GestionarUsuarios
+    usecase "Gestionar Reservas" as GestionarReservas
+    usecase "Gestionar Menús" as GestionarMenus
+
+
+    usecase ( registro / login ) as Login
+
+    ListarRestaurantes .. Login
+    VerDetallesRestaurante ..Login
+    HacerReserva ..Login
+    ListarMenus ..Login
+    BuscarRestaurantes .. Login
+    EditarReserva .. Login
+    HacerComentarios .. Login
+    AnadirFavoritos ..Login
+    AnadirRestaurante .. Login
+    EditarRestaurante .. Login
+    AnadirMenus .. Login
+    EditarMenus .. Login
+    VerReservas .. Login
+    EditarReservas .. Login
+    GestionarUsuarios .. Login
+    GestionarReservas .. Login
+    GestionarMenus .. Login
+
+
+
+    Cliente --> ListarRestaurantes
+    Cliente --> VerDetallesRestaurante
+    Cliente --> HacerReserva
+    Cliente --> ListarMenus
+    Cliente --> BuscarRestaurantes
+    Cliente --> EditarReserva
+    Cliente --> HacerComentarios
+    Cliente --> AnadirFavoritos
+
+    Empresario --> AnadirRestaurante
+    Empresario --> EditarRestaurante
+    Empresario --> AnadirMenus
+    Empresario --> EditarMenus
+    Empresario --> VerReservas
+    Empresario --> EditarReservas
+
+    Admin --> GestionarUsuarios
+    Admin --> GestionarReservas
+    Admin --> GestionarMenus
+
+
+}
+
+@enduml

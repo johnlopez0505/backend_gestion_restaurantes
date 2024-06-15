@@ -40,7 +40,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder =
                 http.getSharedObject(AuthenticationManagerBuilder.class);
-        
 
         AuthenticationManager authenticationManager =
              authenticationManagerBuilder.authenticationProvider(authenticationProvider())
@@ -49,8 +48,6 @@ public class SecurityConfig {
         return authenticationManager;
 
     }
-
-
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -63,7 +60,6 @@ public class SecurityConfig {
     }
 
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -71,7 +67,8 @@ public class SecurityConfig {
                 .disable())
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/webjars/**", "/img/**", "/js/**", "/imagenes/**", 
-                                         "/api/auth/register", "/api/auth/login", "/api/refreshtoken")
+                                         "/api/auth/register","/api/auth/register/empresario",
+                                          "/api/auth/login", "/api/refreshtoken")
                         .permitAll()
 
                         .requestMatchers("/api/auth/register/admin", "/api/usuarios/**")
@@ -79,7 +76,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/restaurantes/**","/api/menus/**", 
                                 "/api/reservas/**","/api/calificaciones/**")
-                        .hasAnyRole("USUARIO","ADMIN")
+                        .hasAnyRole("USUARIO","ADMIN","EMPRESARIO")
                         
                         .anyRequest().authenticated() 
                 ) 

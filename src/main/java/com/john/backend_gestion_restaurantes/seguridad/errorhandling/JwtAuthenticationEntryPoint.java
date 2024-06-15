@@ -25,17 +25,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private HandlerExceptionResolver resolver;
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-
-       /*response.setStatus(HttpStatus.UNAUTHORIZED.value());
-       response.setHeader("WWW-Authenticate", "Bearer");
-       response.setContentType("application/json");
-
-       response.getWriter()
-               .println(objectMapper.writeValueAsString(
-                       Map.of("error", authException.getMessage())
-               ));
-       */
+    public void commence(HttpServletRequest request, 
+                        HttpServletResponse response, 
+                        AuthenticationException authException) throws IOException, ServletException {
         resolver.resolveException(request, response, null, authException);
     }
 }

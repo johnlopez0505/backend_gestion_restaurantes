@@ -1,0 +1,92 @@
+@startuml
+
+   enum UsuarioRol {
+      ADMIN
+      USUARIO
+      EMPRESARIO
+   }
+
+   class Usuario {
+      - id: Long
+      - password: String
+      - username: String
+      - fullName: String
+      - telefono: String
+      - imagen: String
+      - token: String
+      - enabled: boolean
+      - roles: Set<UsuarioRol>
+      - createdBy: String
+      - accountNonExpired: boolean
+      - accountNonLocked: boolean
+      - credentialsNonExpired: boolean
+      + getAuthorities(): Collection<? extends GrantedAuthority>
+      + isAccountNonExpired(): boolean
+      + isAccountNonLocked(): boolean
+      + isCredentialsNonExpired(): boolean
+      + isEnabled(): boolean
+      + getUsername(): String
+   }
+
+   class Restaurante {
+      - id: Long
+      - usuario: Usuario
+      - nombre: String
+      - ciudad: String
+      - provincia: String
+      - telefono: String
+      - imagen: String
+      - direccion: String
+      - createdBy: String
+   }
+
+   class Reserva {
+      - id: Long
+      - usuario: Usuario
+      - restaurante: Restaurante
+      - fechaYHora: LocalDateTime
+      - nombreCliente: String
+      - telefonoCliente: String
+      - emailCliente: String
+      - numeroPersonas: int
+      - notas: String
+      - createdBy: String
+      - fechaCreacion: LocalDateTime
+   }
+
+   class RefreshToken {
+      - id: Long
+      - user: Usuario
+      - token: String
+      - expiryDate: Instant
+      - createdAt: Instant
+   }
+
+   class Menu {
+      - id: Long
+      - restaurante: Restaurante
+      - createdBy: String
+      - nombre: String
+      - descripcion: String
+      - precio: Double
+      - imagen: String
+   }
+
+   class Calificacion {
+      - id: Long
+      - usuario: Usuario
+      - restaurante: Restaurante
+      - puntuacion: Double
+      - comentario: String
+      - createdBy: String
+      - createdAt: LocalDateTime
+   }
+
+   Usuario "1" -- "0..*" Reserva : Realiza
+   Usuario "1" -- "1" RefreshToken : Tiene
+   Usuario "1" -- "0..*" Calificacion : Realiza
+   Usuario "1" -- "0..*" Restaurante : Propietario
+
+   Restaurante "1" -- "0..*" Menu : Tiene
+
+@enduml

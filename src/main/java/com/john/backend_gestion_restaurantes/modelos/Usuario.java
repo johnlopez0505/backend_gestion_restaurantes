@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Pattern;
 
 import org.hibernate.annotations.NaturalId;
 import org.springframework.data.annotation.CreatedBy;
@@ -41,12 +42,19 @@ public class Usuario implements UserDetails{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(nullable = false)
     private String password;
 
     @NaturalId
-    @Column(unique = true, updatable = false)
+    @Column(unique = true, updatable = false, nullable = false)
     private String username;
+
+    @Column(nullable = false)
     private String fullName;
+
+    @Pattern(regexp="^[679][0-9]{8}$", message="El teléfono debe tener 9 dígitos y comenzar con 6, 7 o 9")
+    private String telefono;
+    
     private String imagen;
     private String token;
 

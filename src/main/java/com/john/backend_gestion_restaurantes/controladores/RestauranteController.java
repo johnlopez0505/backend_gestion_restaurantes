@@ -1,16 +1,14 @@
 package com.john.backend_gestion_restaurantes.controladores;
 
-import com.john.backend_gestion_restaurantes.modelos.Restaurante;
-import com.john.backend_gestion_restaurantes.modelos.Usuario;
-import com.john.backend_gestion_restaurantes.servicios.calificacion.ImagenService;
-import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
-import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
-
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,13 +19,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.john.backend_gestion_restaurantes.dto.RestauranteDTO;
+import com.john.backend_gestion_restaurantes.dto.response.RestauranteResponse;
+import com.john.backend_gestion_restaurantes.modelos.Restaurante;
+import com.john.backend_gestion_restaurantes.modelos.Usuario;
+import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
+import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
+import com.john.backend_gestion_restaurantes.servicios.usuarios.UsuarioService;
 
 
 @RestController
@@ -41,282 +40,288 @@ public class RestauranteController {
     private UsuarioService usuarioService;
 
     @Autowired
-    private ImagenService imagenService;
-
-    private String baseUrl;
+    private FirebaseStorageService firebaseStorageService;
 
 
 
     @GetMapping("/restaurantes")
-    public ResponseEntity<Object> obtenerTodosLosRestaurantes(HttpServletRequest request){
+    public ResponseEntity<RestauranteResponse<List<RestauranteDTO>>> obtenerTodosLosRestaurantes(){
         try {
-            List<Restaurante> restaurantes = this.restauranteService.findAllRestaurantes();
-            Map<String, Object> response = new HashMap<>();
-            baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                                .replacePath(null)
-                                .build()
-                                .toUriString()+"/imagenes/";
-           
-            if (!restaurantes.isEmpty()) {
-                response.put("result", "ok");
-                response.put("restaurantes", restaurantes.stream().map(
-                   restaurante -> Map.of("id",restaurante.getId(),
-                                   "usuarioId",restaurante.getUsuario().getId(),
-                                   "nombre",restaurante.getNombre(),
-                                   "ciudad",restaurante.getCiudad(),
-                                   "provincia",restaurante.getProvincia(),
-                                   "telefono", restaurante.getTelefono(),
-                                   "imagen",restaurante.getImagen() != null ? (baseUrl + restaurante.getImagen())  : "sin imagen"
-                                   )
-                                )
-                            );
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("result", "ok");
-                response.put("message", "No se encontro ningun restaurante en la base de datos");
-                return ResponseEntity.ok(response);
+            List<RestauranteDTO> restaurantes = restauranteService.findAllRestaurantes();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                RestauranteResponse<List<RestauranteDTO>> response = new RestauranteResponse<>(
+                    "error", "No autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
+            if (restaurantes == null || restaurantes.isEmpty()) {
+               RestauranteResponse<List<RestauranteDTO>> response = new RestauranteResponse<>(
+                "error", "No hay restaurantes almacenados en la base de datos", restaurantes);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            RestauranteResponse<List<RestauranteDTO>> response = new RestauranteResponse<>(
+            "ok", "Restaurantes listados con éxito", restaurantes);
+            return ResponseEntity.ok(response);
+        
         } catch (Exception e) {
-            // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("result", "error");
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al procesar la solicitud: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("get", "/api/restaurantes");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            RestauranteResponse<List<RestauranteDTO>> response = new RestauranteResponse<>(
+            "error", "Ocurrió un error al listar los restaurante", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     @GetMapping("/restaurantes/{id}")
-    public ResponseEntity<Object> obtenerRestaurantePorId(@PathVariable Integer id) {
+    public ResponseEntity<RestauranteResponse<RestauranteDTO>> obtenerRestaurantePorId(
+                                                                @PathVariable Integer id) {
        try {
-        Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
-        Map<String, Object> response = new HashMap<>();
-        if(optionalRestaurante.isPresent()) {
-            Restaurante restaurante = optionalRestaurante.get();
-            response.put("result", "ok");
-            response.put("restaurantes", Map.of("id",restaurante.getId(),
-                               "usuarioId",restaurante.getUsuario().getId(),
-                               "nombre",restaurante.getNombre(),
-                               "ciudad",restaurante.getCiudad(),
-                               "provincia",restaurante.getProvincia(),
-                               "telefono", restaurante.getTelefono(),
-                               "imagen",restaurante.getImagen() != null ?restaurante.getImagen() : "Sin imagen"
-                            )
-                        );
+            Optional<RestauranteDTO> restaurante = restauranteService.findById(id);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                    "error", "El usuario no esta autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            if (!restaurante.isPresent()) {
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                "error", "No se encontró un restaurante con el ID proporcionado", null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+            "ok", "Restaurante listado con éxito", restaurante.get());
             return ResponseEntity.ok(response);
-        }else{
-            // Manejo del caso en el que no se encuentra el restaurante
-            response.put("result", "error");
-            response.put("message", "No se encontró un restaurante con el ID proporcionado");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
        } catch (Exception e) {
-         // Manejo de la excepción
-         Map<String, Object> errorResponse = new HashMap<>();
-         errorResponse.put("result", "error");
-         errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-         errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-         errorResponse.put("message", "Se produjo un error al procesar la solicitud: " + e.getMessage());
-         errorResponse.put("timestamp", LocalDateTime.now());
-         errorResponse.put("get", "/api/restaurantes/{id}");
-         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+            "error", "Ocurrió un error al guardar el restaurante", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
        }
     }
 
     @PostMapping("/restaurantes/add")
-    public ResponseEntity<Object> createRestaurante(@RequestHeader Integer id, 
-                                                    @RequestBody Restaurante restaurante,
-                                                    HttpServletRequest request
-                                                    ) {
-        System.out.println("REQUEST: " + request);
+    public ResponseEntity< RestauranteResponse<RestauranteDTO>> createRestaurante(@RequestHeader Integer id, 
+                                                    @RequestBody Restaurante restaurante) {
         try {
-            Optional<Usuario> optionalUsuario = usuarioService.findUsuarioById(id);
-            Map<String, Object> response = new HashMap<>();
-            if (!optionalUsuario.isPresent()) {
-                // Manejo del caso en el que no se encuentre el usuario
-                response.put("result", "error");
-                response.put("message", "Usuario no encontrado con el id proporcionado");
+            // Obtener el usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                    "error", "El usuario no esta autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            Optional<Usuario> optionalUser = usuarioService.findUsuarioById(id);
+            if (!optionalUser.isPresent()) {
+                RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                    "error", "No se encontró un usuario con el ID proporcionado", null);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
-            Usuario usuario = optionalUsuario.get();
-            restaurante.setUsuario(usuario);
-             // Guardar la nueva imagen si existe
+            //Usuario  user = (Usuario) authentication.getPrincipal();
+            Usuario user = optionalUser.get();
+            restaurante.setUsuario(user);
+
+            // Guardar la nueva imagen si existe
             if (restaurante.getImagen() != null && !restaurante.getImagen().isEmpty()) {
-                System.out.println("entramos el el if para mirar la url");
-                baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
-                                  .replacePath(null)
-                                  .build()
-                                  .toUriString()+"/imagenes/";
-                System.out.println("base url: " + baseUrl);
-                String newFileName = imagenService.saveImage(restaurante.getImagen());
-                restaurante.setImagen(newFileName);
+                String newFileName;
+                try {
+                    newFileName = firebaseStorageService.uploadBase64Image(restaurante.getImagen());
+                    } catch (Exception e) {
+                        // Manejo de la excepción
+                        throw new RuntimeException("Error al subir la imagen a Firebase", e);
+                    }
+                    restaurante.setImagen(newFileName);
+            } else {
+                restaurante.setImagen("ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg");
             }
-            // Guarda el nuevo restaurante en la base de datos
-            Restaurante nuevoRestaurante = restauranteService.save(restaurante);
-            // Devuelve una respuesta exitosa con el restaurante recién creado
-            response.put("result", "ok");
-            response.put("restaurantes", Map.of("id", nuevoRestaurante.getId(),
-                                "usuarioId", nuevoRestaurante.getUsuario().getId(),
-                                "nombre", nuevoRestaurante.getNombre(),
-                                "ciudad", nuevoRestaurante.getCiudad(),
-                                "provincia", nuevoRestaurante.getProvincia(),
-                                "telefono", nuevoRestaurante.getTelefono(),
-                                "imagenPlato", nuevoRestaurante.getImagen() != null ? (baseUrl + nuevoRestaurante.getImagen())  : "sin imagen"
-                                )
-                            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+            Optional<RestauranteDTO> nuevoRestaurante = restauranteService.save(restaurante);
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                "ok", "Restaurante creado con éxito", nuevoRestaurante.get());
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al agregar el restaurante: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("post", "/api/restaurantes/add");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+            "error", "Ocurrió un error al guardar el restaurante: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+       }
     }
     
 
     @PutMapping("/restaurantes/edit/{id}")
-    public ResponseEntity<Object> actualizarRestaurante(@PathVariable  Integer id, @RequestBody Restaurante restaurante){
+    public ResponseEntity< RestauranteResponse<RestauranteDTO>> actualizarRestaurante(@PathVariable  Integer id, 
+                                             @RequestBody Restaurante restaurante){
         try {
-            Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
-            Map<String,Object> response = new HashMap<>();
+            Optional<Restaurante> optionalRestaurante = restauranteService.findRestauranteById(id);
+            // Obtener el usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+               RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                    "error", "El usuario no está autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+    
             if (!optionalRestaurante.isPresent()) {
-                // Manejo del caso en el que no se encuentra el restaurante
-                response.put("result", "error");
-                response.put("message", "Restaurante no encontrado con el id proporcionado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+               RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                 "error", "No se encontró un menú con el ID proporcionado", null);
+                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            Restaurante existingRestaurante = optionalRestaurante.get();
+            existingRestaurante.setNombre(restaurante.getNombre());
+            existingRestaurante.setCiudad(restaurante.getCiudad());
+            existingRestaurante.setProvincia(restaurante.getProvincia());
+            existingRestaurante.setTelefono(restaurante.getTelefono());
+            existingRestaurante.setDireccion(restaurante.getDireccion());
+            // Guardar la nueva imagen si existe
+            if (restaurante.getImagen() != null && !restaurante.getImagen().isEmpty()) {
+                String newFileName = 
+                       firebaseStorageService.updateFile(existingRestaurante.getImagen(), restaurante.getImagen());
+                       existingRestaurante.setImagen(newFileName);
             }
 
-            Restaurante existendRestaurante = optionalRestaurante.get();
-            existendRestaurante.setNombre(restaurante.getNombre());
-            existendRestaurante.setCiudad(restaurante.getCiudad());
-            existendRestaurante.setProvincia(restaurante.getProvincia());
-            existendRestaurante.setTelefono(restaurante.getTelefono());
-            existendRestaurante.setImagen(restaurante.getImagen());
-            Restaurante editRestaurante = restauranteService.save(existendRestaurante);
-            response.put("result",  "ok");
-            response.put("restaurantes", Map.of("id",editRestaurante.getId(),
-                                "usuarioId", editRestaurante.getUsuario().getId(),
-                                "nombre", editRestaurante.getNombre(),
-                                "ciudad", editRestaurante.getCiudad(),
-                                "provincia", editRestaurante.getProvincia(),
-                                "telefono", editRestaurante.getTelefono(),
-                                "imagen", editRestaurante.getImagen()
-                            )
-                        );
+            // Guarda el nuevo restaurante en la base de datos
+            Optional<RestauranteDTO> nuevoRestaurante = restauranteService.save(existingRestaurante);
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                "ok", "Restaurante actualizado con éxito", nuevoRestaurante.get());
             return ResponseEntity.ok(response);
-          
+
         } catch (Exception e) {
-             // Manejo de la excepción
-             Map<String, Object> errorResponse = new HashMap<>();
-             errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-             errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-             errorResponse.put("message", "Se produjo un error al actualizar el restaurante: " + e.getMessage());
-             errorResponse.put("timestamp", LocalDateTime.now());
-             errorResponse.put("put", "/api/menus");
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                 "error", "Ocurrió un error al actualizar el restaurante: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
+
     @PatchMapping("/restaurantes/edit/{id}")
-    public ResponseEntity<Object> actualizarRestaurantePatch(@PathVariable Integer id,  @RequestBody Map<String, Object> updates) {
+    public ResponseEntity<RestauranteResponse<RestauranteDTO>> actualizarRestaurantePatch(@PathVariable Integer id,  
+                                                @RequestBody Map<String, Object> updates) {
         try {
-            Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
-            //System.out.println("este es el menu consultado por id " + optionalMenu.get().toString());
-            Map<String, Object> response = new HashMap<>();
-            if (!optionalRestaurante.isPresent()) {
-                // Manejo del caso en el que no se encuentra el restaurante
-                response.put("result", "error");
-                response.put("message", "No se encontró un restaurante con el ID proporcionado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            Optional<Restaurante> optionalRestaurante = restauranteService.findRestauranteById(id);
+            // Obtener el usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+               RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                    "error", "El usuario no está autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
-            
-            Restaurante restauranteExistente = optionalRestaurante.get();
+    
+            if (!optionalRestaurante.isPresent()) {
+               RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                 "error", "No se encontró un restaurante con el ID proporcionado", null);
+                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            Restaurante existingRestaurante = optionalRestaurante.get();
             // Actualizar cada campo proporcionado en el objeto JSON de actualizaciones
-            updates.forEach((campo, valor) -> {
+            for (Map.Entry<String, Object> entry : updates.entrySet()) {
+                String campo = entry.getKey();
+                Object valor = entry.getValue();
                 switch (campo) {
                     case "nombre":
-                       restauranteExistente.setNombre(valor.toString());
+                        if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                            existingRestaurante.setNombre(valor.toString());
+                        }
                         break;
                     case "ciudad":
-                       restauranteExistente.setCiudad(valor.toString());
+                        if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                            existingRestaurante.setCiudad(valor.toString());
+                        }
                         break;
                     case "provincia":
-                       restauranteExistente.setProvincia(valor.toString());
+                        if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                            existingRestaurante.setProvincia(valor.toString());
+                        }
                         break;
                     case "telefono":
-                        restauranteExistente.setTelefono(valor.toString());
-                    break;
+                        if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                            existingRestaurante.setTelefono(valor.toString());
+                        }
+                        break;
                     case "imagen":
-                       restauranteExistente.setImagen(valor.toString());
+                        // Guardar la nueva imagen si existe
+                        if (valor.toString() != null && ! valor.toString().isEmpty()) {
+                            String newFileName = firebaseStorageService.updateFile(
+                                existingRestaurante.getImagen(), valor.toString());
+                            existingRestaurante.setImagen(newFileName);
+                        }
+                        break;
+                    case "direccion":
+                        if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                            existingRestaurante.setDireccion(valor.toString());
+                        }
                         break;
                     default:
-                        // Ignora campos desconocidos
-                        //response.put(campo, "No se encontró parametro");
-                        break;
+                         //campos desconocidos
+                         RestauranteResponse<RestauranteDTO> errorResponse = new RestauranteResponse<>(
+                            "error", "No se encontró parametro: " + campo, null);
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
                 }
-            });
-            Restaurante nuevoRestaurante = restauranteService.save(restauranteExistente);
-            // Devuelve una respuesta exitosa con el menú recién creado
-            response.put("result", "ok");
-            response.put("restaurantes", Map.of("id",nuevoRestaurante.getId(),
-                            "usuarioId", nuevoRestaurante.getUsuario().getId(),
-                            "nombre",nuevoRestaurante.getNombre(),
-                            "ciudad",nuevoRestaurante.getCiudad(),
-                            "provincia",nuevoRestaurante.getProvincia(),
-                            "telefono", nuevoRestaurante.getTelefono(),
-                            "imagen",nuevoRestaurante.getImagen()
-                            )
-                        );
+            }
+            // Guarda el nuevo restaurante en la base de datos
+            Optional<RestauranteDTO> nuevoRestaurante = restauranteService.save(existingRestaurante);
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                "ok", "Restaurante actualizado con éxito", nuevoRestaurante.get());
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al actualizar el restaurante: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("path", "/api/menus");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+
+        }catch (Exception e) {
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                 "error", "Ocurrió un error al actualizar el restaurante: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     @DeleteMapping("/restaurantes/delete/{id}")
-    public ResponseEntity<Object> deleteMenu(@PathVariable Integer id) {
+    public ResponseEntity<RestauranteResponse<RestauranteDTO>> deleteMenu(@PathVariable Integer id) {
         try {
             // Buscar el restaurante por su ID
-            Optional<Restaurante> restauranteOptional = restauranteService.findById(id);
-            Map<String, Object> response = new HashMap<>();
-            if (restauranteOptional.isPresent()) {
-                Restaurante restaurante = restauranteOptional.get();
-                // Si se encuentra el restaurante, eliminarlo de la base de datos
-                restauranteService.deleteById(restaurante.getId().intValue());
-                // Devolver una respuesta indicando que el restaurante fue eliminado correctamente
-                response.put("result", "ok");
-                response.put("message", "El restaurante se eliminó correctamente");
-                return ResponseEntity.ok(response);
-            } else {
-                // Si no se encuentra el restaurante con el ID proporcionado, 
-                // devolver una respuesta indicando que no se encontró el restaurante
-                response.put("result", "error");
-                response.put("message", "No se encontró un restaurante con el ID proporcionado");
+            Optional<Restaurante> restauranteOptional = restauranteService.findRestauranteById(id);
+
+             if (restauranteOptional.isPresent()) {
+                 Restaurante restaurate = restauranteOptional.get();
+                 // Si se encuentra el restaurante, lo eliminamos de la base de datos
+                 restauranteService.deleteById(restaurate.getId().intValue());
+                 // Devolvemos una respuesta indicando que el restaurante fue eliminado correctamente
+                RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                     "ok", "El restaurante se eliminó correctamente", null);
+                 return ResponseEntity.ok(response);
+             } else {
+                 // Si no se encuentra el restaurante con el ID proporcionado, devolver una respuesta indicando que no se encontró el restaurante
+                RestauranteResponse<RestauranteDTO> errorResponse = new RestauranteResponse<>(
+                     "error", "No se encontró un restaurante con el ID proporcionado", null);
+                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+             }
+         } catch (Exception e) {
+            // Manejo de la excepción
+            RestauranteResponse<RestauranteDTO> response = new RestauranteResponse<>(
+                "error", "Ocurrió un error al eliminar el restaurante: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+         }   
+    }
+
+    @GetMapping("/restaurantes/usuario")
+    public ResponseEntity<RestauranteResponse<List<RestauranteDTO>>> getAllRestaurantesCreatedByCurrentUser() {
+        try {
+            // Obtener el usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+               RestauranteResponse<List<RestauranteDTO>> response = new RestauranteResponse<>(
+                    "error", "El usuario no está autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            // Obtener el ID del usuario autenticado
+            String currentUserId = String.valueOf(((Usuario) authentication.getPrincipal()).getId());
+            List<RestauranteDTO> restaurantesCreatedByCurrentUser = restauranteService.getRestaurantesCreatedByUser(currentUserId);
+            // Devolver una respuesta indicando que se listaron los restaurantes correctamente
+            if (restaurantesCreatedByCurrentUser == null || restaurantesCreatedByCurrentUser.isEmpty()) {
+               RestauranteResponse<List<RestauranteDTO>> response = new RestauranteResponse<>(
+                "error", "El usuario no tiene Restaurantes en la base de datos", restaurantesCreatedByCurrentUser);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
+
+             RestauranteResponse<List<RestauranteDTO>> response = new  RestauranteResponse<>(
+                "ok", "Menús listados con éxito", restaurantesCreatedByCurrentUser);
+                return ResponseEntity.ok(response);
         } catch (Exception e) {
-             // Manejo de la excepción
-             Map<String, Object> errorResponse = new HashMap<>();
-             errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-             errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-             errorResponse.put("message", "Se produjo un error al eliminar el restaurante: " + e.getMessage());
-             errorResponse.put("timestamp", LocalDateTime.now());
-             errorResponse.put("delete", "/api/menus/{id}");
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            // Manejo de la excepción
+            RestauranteResponse<List<RestauranteDTO>> response = new RestauranteResponse<>(
+                "error", "Ocurrió un error al listar los restaurantes: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 }

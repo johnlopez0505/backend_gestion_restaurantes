@@ -1,11 +1,14 @@
 package com.john.backend_gestion_restaurantes.servicios.calificacion;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.john.backend_gestion_restaurantes.dto.CalificacionDTO;
 import com.john.backend_gestion_restaurantes.modelos.Calificacion;
 import com.john.backend_gestion_restaurantes.repositorios.RepoCalificacion;
 
@@ -20,9 +23,21 @@ public class CalificacionServiceImpl implements CalificacionService{
     }
 
     @Override
-    public List<Calificacion> findAllCalificacion() {
-        return repoCalificacion.findAll();
+    public List<CalificacionDTO> findAllCalificacion() {
+        System.out.println("entramos en finAll()");
+        List<Calificacion> calificaciones = repoCalificacion.findAll();
+        System.out.println("estas son las calificaciones: " + calificaciones);
+        return calificaciones.stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
     }
+
+   @Override
+    public Optional<CalificacionDTO> findById(Integer id) {
+        Optional<Calificacion> calificacion = repoCalificacion.findById(id);
+        return calificacion.map(this::convertToDTO);
+    }
+
 
     @Override
     public Optional<Calificacion> findCalificacionById(Integer id) {
@@ -30,18 +45,47 @@ public class CalificacionServiceImpl implements CalificacionService{
     }
 
     @Override
-    public Calificacion saveCalificacion(Calificacion calificacion) {
-        return repoCalificacion.save(calificacion);
+    public Optional<CalificacionDTO> saveCalificacion(Calificacion calificacion) {
+        try {
+            Calificacion guardarCalificacion = repoCalificacion.save(calificacion);
+            return Optional.ofNullable(convertToDTO(guardarCalificacion));
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Override
     public void deleteCalificacionById(Integer id) {
-       repoCalificacion.deleteById(id);
+        this.repoCalificacion.deleteById(id);
     }
 
     @Override
-    public List<Calificacion> getCalificacionesCreatedByUser(String username) {
-        // Consulta las calificaciones creadas por el usuario 
-        return repoCalificacion.findByCreatedBy(username);
+    public void deleteAll() {
+      this.repoCalificacion.deleteAll();
     }
+
+    @Override
+    public List<CalificacionDTO> getCalificacionesCreatedByUser(String userId) {
+        List<Calificacion> calificaciones = repoCalificacion.findByCreatedBy(userId);
+        return calificaciones.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private CalificacionDTO convertToDTO(Calificacion calificacion) {
+        System.out.println("entramos en dto");
+        CalificacionDTO dto = new CalificacionDTO();
+        dto.setId(calificacion.getId());
+        dto.setUsuarioId(calificacion.getUsuario().getId());
+        dto.setRestauranteId(calificacion.getRestaurante().getId());
+        dto.setPuntuacion(calificacion.getPuntuacion());
+        dto.setComentario(calificacion.getComentario());
+        // Usar el operador ternario para manejar el caso en que createdAt es nulo
+        String fechaYHoraStr = (calificacion.getCreatedAt() != null) 
+        ? calificacion.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) 
+        : "";
+        dto.setCreatedAt(fechaYHoraStr);
+        return dto;
+    }
+
 }

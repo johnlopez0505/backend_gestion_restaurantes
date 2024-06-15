@@ -14,7 +14,9 @@ import com.john.backend_gestion_restaurantes.modelos.Usuario;
 import com.john.backend_gestion_restaurantes.seguridad.errorhandling.JwtTokenException;
 
 import javax.crypto.SecretKey;
-import java.time.LocalDateTime;
+
+import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -30,8 +32,8 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.duration}")
-    private int jwtLifeInMinutes;
+    //@Value("${jwt.duration}")
+    //private int jwtLifeInMinutes;
 
     private JwtParser jwtParser;
 
@@ -58,13 +60,11 @@ public class JwtProvider {
 
     public String generateToken(Usuario user) {
         Date tokenExpirationDateTime =
-                Date.from(
-                        LocalDateTime
-                                .now()
-                                .plusMinutes(jwtLifeInMinutes)
-                                .atZone(ZoneId.systemDefault())
-                                .toInstant()
-                );
+            Date.from(
+                Instant.now().plus(Duration.ofDays(30))
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+            );
 
         return Jwts.builder()
                 .setHeaderParam("typ", TOKEN_TYPE)

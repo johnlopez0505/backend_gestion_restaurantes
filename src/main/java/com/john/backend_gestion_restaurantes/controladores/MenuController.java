@@ -2,13 +2,17 @@ package com.john.backend_gestion_restaurantes.controladores;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.john.backend_gestion_restaurantes.dto.MenuDTO;
+import com.john.backend_gestion_restaurantes.dto.response.MenuResponse;
 import com.john.backend_gestion_restaurantes.modelos.Menu;
 import com.john.backend_gestion_restaurantes.modelos.Restaurante;
+import com.john.backend_gestion_restaurantes.modelos.Usuario;
+import com.john.backend_gestion_restaurantes.servicios.imagenes.FirebaseStorageService;
 import com.john.backend_gestion_restaurantes.servicios.menu.MenuService;
 import com.john.backend_gestion_restaurantes.servicios.restaurante.RestauranteService;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,267 +45,316 @@ public class MenuController {
     @Autowired
     private RestauranteService restauranteService;
 
-    // public MenuController(MenuService menuService, RestauranteService restauranteService){
-    //     this.menuService = menuService;
-    //     this.restauranteService = restauranteService;
-    // }
+   @Autowired
+   private FirebaseStorageService firebaseStorageService;
 
     @GetMapping("/menus")
-    public ResponseEntity<Object> findAll(){
-        //System.out.println("ingresa en buscar todos los menus ");
+    public ResponseEntity<MenuResponse<List<MenuDTO>>> findAll(){
         try {
-            List<Menu> menus = menuService.findAll();
-            Map<String, Object> response = new HashMap<>();
-            if (!menus.isEmpty()) {
-                response.put("result", "ok");
-                response.put("menus", menus.stream().map(
-                    menu -> Map.of("id", menu.getId(),
-                                   "restauranteId", menu.getRestaurante().getId(),
-                                   "usuarioId", menu.getRestaurante().getUsuario().getId(),
-                                   "nombre", menu.getNombre(),
-                                   "descripcion", menu.getDescripcion(),
-                                   "precio", menu.getPrecio(),
-                                   "imagen", menu.getImagen()
-                                   )
-                                )
-                            );
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("result", "ok");
-                response.put("details", "No se encontro ningun menú en la base de datos");
-                return ResponseEntity.ok(response);
+            List<MenuDTO> menus = menuService.findAll();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                MenuResponse<List<MenuDTO>> response = new MenuResponse<>(
+                    "error", "No autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
-        } catch (Exception e) {
-            // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("result", "error");
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al procesar la solicitud: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("get", "/api/menus");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
 
-    @GetMapping("/menus/{id}")
-    public ResponseEntity<Object> findMenuById(@PathVariable Integer id){
-        try {
-            Optional<Menu> optionalMenu = menuService.findById(id);
-            Map<String, Object> response = new HashMap<>();
-            if (!optionalMenu.isPresent()) {
-                // Manejo del caso en el que no se encuentra el menú
-                response.put("result", "error");
-                response.put("message", "No se encontró un menú con el ID proporcionado");
-                return ResponseEntity.ok(response);
+            if (menus == null || menus.isEmpty()) {
+            MenuResponse<List<MenuDTO>> response = new MenuResponse<>(
+                "error", "No hay menús almacenados en la base de datos", menus);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
-            Menu existingMenu = optionalMenu.get();
-            // Devuelve una respuesta exitosa con el menú recién creado
-            response.put("result", "ok");
-            response.put("menus", Map.of("id", existingMenu.getId(),
-                                "restauranteId", existingMenu.getRestaurante().getId(),
-                                "usuarioId", existingMenu.getRestaurante().getUsuario().getId(),
-                                "nombre", existingMenu.getNombre(),
-                                "descripcion", existingMenu.getDescripcion(),
-                                "precio", existingMenu.getPrecio(),
-                                "imagen", existingMenu.getImagen()
-                                )
-                            );
+
+            MenuResponse<List<MenuDTO>> response = new MenuResponse<>(
+            "ok", "Menús listados con éxito", menus);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al buscar el menú: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("get", "/api/menus/{id}");
+            MenuResponse<List<MenuDTO>> errorResponse = new MenuResponse<>(
+                "error", "Se produjo un error al listar los menús: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+        
+
+    @GetMapping("/menus/{id}")
+    public ResponseEntity<MenuResponse<MenuDTO>> findMenuById(@PathVariable Integer id){
+        try {
+            Optional<MenuDTO> menu = menuService.findById(id);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                MenuResponse<MenuDTO> response = new MenuResponse<>(
+                    "error", "El usuario no esta autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            if (!menu.isPresent()) {
+            MenuResponse<MenuDTO> response = new MenuResponse<>(
+                "error", "No se encontró un menú con el ID proporcionado", null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            MenuResponse<MenuDTO>response = new MenuResponse<>(
+            "ok", "Menús listado con éxito", menu.get());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // Manejo de la excepción
+            MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                "error", "Se produjo un error al listar el menú: " + e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     } 
 
     @PostMapping("/menus/add")
-    public ResponseEntity<Object> createMenu(@RequestHeader Integer id, @RequestBody Menu menu) {
+    public ResponseEntity<MenuResponse<MenuDTO>> createMenu(@RequestHeader Integer id, @RequestBody Menu menu) {
         try {
-            Optional<Restaurante> optionalRestaurante = restauranteService.findById(id);
-            Map<String, Object> response = new HashMap<>();
-            if (!optionalRestaurante.isPresent()) {
-                // Manejo del caso en el que no se encuentra el restaurante
-                response.put("result", "error");
-                response.put("message", "No se encontró un menú con el ID proporcionado");
+            // Obtener el usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                MenuResponse<MenuDTO> response = new MenuResponse<>(
+                    "error", "El usuario no esta autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+    
+            //String userId = String.valueOf(((Usuario) authentication.getPrincipal()).getId());
+            Optional<Restaurante> restauranteOptional = restauranteService.findRestauranteById(id);
+
+            if (!restauranteOptional.isPresent()) {
+            MenuResponse<MenuDTO> response = new MenuResponse<>(
+                "error", "No se encontró un restaurante con el ID proporcionado", null);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
-            Restaurante restaurante = optionalRestaurante.get();
+
+            Restaurante restaurante = restauranteOptional.get();
             menu.setRestaurante(restaurante);
-            // Guarda el nuevo menú en tu base de datos
-            Menu nuevoMenu = this.menuService.save(menu);
-            // Devuelve una respuesta exitosa con el menú recién creado
-            response.put("result", "ok");
-            response.put("menus", Map.of("id", nuevoMenu.getId(),
-                                "restauranteId", nuevoMenu.getRestaurante().getId(),
-                                "usuarioId", nuevoMenu.getRestaurante().getUsuario().getId(),
-                                "nombre", nuevoMenu.getNombre(),
-                                "descripcion", nuevoMenu.getDescripcion(),
-                                "precio", nuevoMenu.getPrecio(),
-                                "imagen", nuevoMenu.getImagen()
-                                )
-                            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            // Validar si el valor es un Double antes de realizar la conversión
+            if (!(menu.getPrecio() instanceof Double)) {
+                // Manejar el caso en el que el valor no sea un Double
+                MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                    "error", "El precio proporcionado no es un número válido", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+
+            // Guardar la nueva imagen si existe
+            if (menu.getImagen() != null && !menu.getImagen().isEmpty()) {
+                String newFileName;
+                try {
+                    newFileName = firebaseStorageService.uploadBase64Image(menu.getImagen());
+                } catch (Exception e) {
+                    // Manejo de la excepción
+                    throw new RuntimeException("Error al subir la imagen a Firebase", e);
+                }
+                menu.setImagen(newFileName);
+            } else {
+                menu.setImagen("ee563e42-e7c3-4734-8077-b99ad71dc145.jpeg");
+            }
+            Optional<MenuDTO> nuevoMenu = menuService.save(menu);
+            MenuResponse<MenuDTO> response = new MenuResponse<>(
+                "ok", "Menú creado con éxito", nuevoMenu.get());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al agregar el menú: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("post", "/api/menus");
+            MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                "error", "Se produjo un error al añadir el menú: " + e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
-    @PutMapping("/menus/edit")
-    public ResponseEntity<Object> updateMenu(@RequestHeader Integer menuId, @RequestBody Menu menu) {
+
+
+
+    @PutMapping("/menus/edit/{id}")
+    public ResponseEntity<MenuResponse<MenuDTO>> updateMenu(@PathVariable  Integer id, @RequestBody Menu menu) {
         try {
-            Optional<Menu> optionalMenu = menuService.findById(menuId);
-            Map<String, Object> response = new HashMap<>();
-            if (!optionalMenu.isPresent()) {
-                // Manejo del caso en el que no se encuentra el menu
-                response.put("result", "error");
-                response.put("message", "No se encontró un menú con el ID proporcionado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            // Obtener el usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                MenuResponse<MenuDTO> response = new MenuResponse<>(
+                    "error", "El usuario no está autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
-            Menu existingMenu = optionalMenu.get();
+    
+            Optional<Menu> menuOptional = menuService.findMenuById(id);
+    
+            if (!menuOptional.isPresent()) {
+                MenuResponse<MenuDTO> response = new MenuResponse<>(
+                 "error", "No se encontró un menú con el ID proporcionado", null);
+                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            Menu existingMenu = menuOptional.get();
             existingMenu.setNombre(menu.getNombre());
             existingMenu.setDescripcion(menu.getDescripcion());
             existingMenu.setPrecio(menu.getPrecio());
-            existingMenu.setImagen(menu.getImagen());
+            // Guardar la nueva imagen si existe
+            if (menu.getImagen() != null && !menu.getImagen().isEmpty()) {
+                String newFileName = 
+                       firebaseStorageService.updateFile(existingMenu.getImagen(), menu.getImagen());
+                       System.out.println(newFileName);
+                existingMenu.setImagen(newFileName);
+            }else{
+                existingMenu.setImagen(existingMenu.getImagen());
+            }
+            // Validar si el valor es un Double antes de realizar la conversión
+            if (!(menu.getPrecio() instanceof Double)) {
+                // Manejar el caso en el que el valor no sea un Double
+                MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                    "error", "El precio proporcionado no es un número válido.", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
             // Guarda el nuevo menú en tu base de datos
-            Menu nuevoMenu = menuService.save(existingMenu);
-            // Devuelve una respuesta exitosa con el menú recién creado
-            response.put("result", "ok");
-            response.put("menus", Map.of("id", nuevoMenu.getId(),
-                            "restauranteId", nuevoMenu.getRestaurante().getId(),
-                            "usuarioId", nuevoMenu.getRestaurante().getUsuario().getId(),
-                            "nombre", nuevoMenu.getNombre(),
-                            "descripcion", nuevoMenu.getDescripcion(),
-                            "precio", nuevoMenu.getPrecio(),
-                            "imagen", nuevoMenu.getImagen()
-                            )
-                        );
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            Optional<MenuDTO> nuevoMenu = menuService.save(existingMenu);
+            MenuResponse<MenuDTO> response = new MenuResponse<>(
+                "ok", "Menú actualizado con éxito", nuevoMenu.get());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al actualizar el menú: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("put", "/api/menus");
+            MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                "error", "Se produjo un error al actualizar el menú: " + e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+
     }
 
-    @PatchMapping("/menus/edit")
-    public ResponseEntity<Object> patchMenu(@RequestHeader Integer id, @RequestBody Map<String, Object> updates) {
+    @PatchMapping("/menus/edit/{id}")
+    public ResponseEntity<MenuResponse<MenuDTO>> patchMenu(@PathVariable Integer id, @RequestBody Map<String, Object> updates) {
         try {
-            Optional<Menu> optionalMenu = menuService.findById(id);
-            //System.out.println("este es el menu consultado por id " + optionalMenu.get().toString());
-            Map<String, Object> response = new HashMap<>();
-            if (!optionalMenu.isPresent()) {
-                // Manejo del caso en el que no se encuentra el restaurante
-                response.put("result", "error");
-                response.put("message", "No se encontró un menú con el ID proporcionado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
+              // Obtener el usuario autenticado
+              Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+              if (authentication == null || !authentication.isAuthenticated()) {
+                  MenuResponse<MenuDTO> response = new MenuResponse<>(
+                      "error", "El usuario no está autorizado", null);
+                  return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+              }
+      
+              Optional<Menu> menuOptional = menuService.findMenuById(id);
+              System.out.println(menuOptional);
+      
+              if (!menuOptional.isPresent()) {
+                  MenuResponse<MenuDTO> response = new MenuResponse<>(
+                   "error", "No se encontró un menú con el ID proporcionado", null);
+                   return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+              }
             
-            Menu menuExistente = optionalMenu.get();
-            // Actualizar cada campo proporcionado en el objeto JSON de actualizaciones
-            updates.forEach((campo, valor) -> {
-                switch (campo) {
-                    case "nombre":
-                        menuExistente.setNombre(valor.toString());
-                        break;
-                    case "descripcion":
-                        menuExistente.setDescripcion(valor.toString());
-                        break;
-                    case "precio":
-                        menuExistente.setPrecio((Double)valor);
-                        break;
-                    case "imagen":
-                        menuExistente.setImagen(valor.toString());
-                        break;
-                    default:
-                        // Ignora campos desconocidos
-                        //response.put(campo, "No se encontró parametro");
-                        break;
-                }
-            });
-            Menu editMenu = menuService.save(menuExistente);
-            // Devuelve una respuesta exitosa con el menú recién creado
-            response.put("result", "ok");
-            response.put("menus", Map.of("id", editMenu.getId(),
-                                "restauranteId", editMenu.getRestaurante().getId(),
-                                "usuarioId", editMenu.getRestaurante().getUsuario().getId(),
-                                "nombre", editMenu.getNombre(),
-                                "descripcion", editMenu.getDescripcion(),
-                                "precio", editMenu.getPrecio(),
-                                "imagen", editMenu.getImagen()
-                                )
-                            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            // Manejo de la excepción
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.put("message", "Se produjo un error al actualizar el menú: " + e.getMessage());
-            errorResponse.put("timestamp", LocalDateTime.now());
-            errorResponse.put("path", "/api/menus");
+                Menu menuExistente = menuOptional.get();
+                // Actualizar cada campo proporcionado en el objeto JSON de actualizaciones
+                for (Map.Entry<String, Object> entry : updates.entrySet()) {
+                    String campo = entry.getKey();
+                    Object valor = entry.getValue();
+                
+                    switch (campo) {
+                        case "nombre":
+                            if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                                menuExistente.setNombre(valor.toString());
+                            }
+                            break;
+                        case "descripcion":
+                            if (valor.toString() != null || ! valor.toString().isEmpty()) {
+                                menuExistente.setDescripcion(valor.toString());
+                            }
+                            break;
+                        case "precio":
+                            try {
+                                if(valor.toString() != null || ! valor.toString().isEmpty()){
+                                    menuExistente.setPrecio(Double.parseDouble(valor.toString()));
+                                } 
+                            } catch (NumberFormatException e) {
+                                // Manejar el caso en el que el valor no sea un número válido
+                                MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                                    "error", "El precio proporcionado no es un número válido", null);
+                                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                            }
+                            break;
+                        case "imagen":
+                            // Guardar la nueva imagen si existe
+                            if (valor.toString() != null && ! valor.toString().isEmpty()) {
+                                String newFileName = "";
+                                try {
+                                    newFileName = firebaseStorageService.updateFile(
+                                        menuExistente.getImagen(), valor.toString());
+                                } catch (IOException e) {
+                                    // Manejamos el error al guardar la imagen
+                                    MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                                        "error", "Error al editar la imagen", null);
+                                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                                }
+                                menuExistente.setImagen(newFileName);
+                            }
+                            break;
+                        default:
+                            MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                                "error", "No se encontró parámetro: " + campo, null);
+                            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                    }
+                };
+                // Guarda el nuevo menú en tu base de datos
+                Optional<MenuDTO> nuevoMenu = menuService.save(menuExistente);
+                MenuResponse<MenuDTO> response = new MenuResponse<>(
+                "ok", "Menú actualizado con éxito", nuevoMenu.get());
+                return ResponseEntity.ok(response);
+            } catch (Exception e) {
+               // Manejo de la excepción
+               MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+               "error", "Se produjo un error al actualizar el menú: " + e.getMessage(), null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
     @DeleteMapping("/menus/delete/{id}")
-    public ResponseEntity<Object> deleteMenu(@PathVariable Integer id) {
+    public ResponseEntity<MenuResponse<MenuDTO>> deleteMenu(@PathVariable Integer id) {
         try {
-            // Buscar el menú por su ID
-            Optional<Menu> menuOptional = menuService.findById(id);
-            Map<String, Object> response = new HashMap<>();
+            // Buscamos el menú por su ID
+            Optional<Menu> menuOptional = menuService.findMenuById(id);
             if (menuOptional.isPresent()) {
                 Menu menu = menuOptional.get();
-                // Si se encuentra el menú, eliminarlo de la base de datos
+                // Si se encuentra el menú, lo eliminamos de la base de datos
                 menuService.deleteById(menu.getId().intValue());
-                // Devolver una respuesta indicando que el menú fue eliminado correctamente
-                response.put("result", "ok");
-                response.put("message", "El menú se eliminó correctamente");
+                // Devolvemos una respuesta indicando que el menú fue eliminado correctamente
+                MenuResponse<MenuDTO> response = new MenuResponse<>(
+                    "ok", "El menú se eliminó correctamente", null);
                 return ResponseEntity.ok(response);
             } else {
-                // Si no se encuentra el menú con el ID proporcionado, devolver una respuesta indicando que no se encontró el menú
-                response.put("result", "error");
-                response.put("message", "No se encontró un menú con el ID proporcionado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                    "error", "No se encontró un menú con el ID proporcionado", null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
             }
         } catch (Exception e) {
              // Manejo de la excepción
-             Map<String, Object> errorResponse = new HashMap<>();
-             errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-             errorResponse.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-             errorResponse.put("message", "Se produjo un error al agregar el menú: " + e.getMessage());
-             errorResponse.put("timestamp", LocalDateTime.now());
-             errorResponse.put("delete", "/api/menus/{id}");
+             MenuResponse<MenuDTO> errorResponse = new MenuResponse<>(
+                 "error", "Se produjo un error al eliminar el menú: " + e.getMessage(), null);
              return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }   
     }
+    
 
     @GetMapping("/menus/usuario")
-    public ResponseEntity<List<Menu>> getAllMenusCreatedByCurrentUser() {
-        // Obtener el usuario autenticado
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
+    public ResponseEntity<MenuResponse<List<MenuDTO>>>getAllMenusCreatedByCurrentUser() {
+        try {
+             // Obtener el usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                MenuResponse<List<MenuDTO>> response = new MenuResponse<>(
+                    "error", "No autorizado", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
 
-        // Obtener los menús creados por el usuario actual
-        List<Menu> menusCreatedByCurrentUser = menuService.getMenusCreatedByUser(currentUsername);
+            String currentUserId = String.valueOf(((Usuario) authentication.getPrincipal()).getId());
+            List<MenuDTO> menusCreatedByCurrentUser = menuService.getMenusCreatedByUser(currentUserId);
 
-        return ResponseEntity.ok(menusCreatedByCurrentUser);
+            if (menusCreatedByCurrentUser == null || menusCreatedByCurrentUser.isEmpty()) {
+                System.out.println("entro si esta vacio o es null");
+            MenuResponse<List<MenuDTO>> response = new MenuResponse<>(
+                "error", "El usuario no tiene Menús en la base de datos", menusCreatedByCurrentUser);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            MenuResponse<List<MenuDTO>> response = new MenuResponse<>(
+            "ok", "Menús listados con éxito", menusCreatedByCurrentUser);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+             // Manejo de la excepción
+             MenuResponse<List<MenuDTO>> errorResponse = new MenuResponse<>(
+                 "error", "Ocurrió un error al obtener los Menús del usuario" + e.getMessage(), null);
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 }
